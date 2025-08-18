@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedSim - Finalización de Simulación</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --dark: #1e293b;
+            --muted: #94a3b8;
+            --white: #ffffff;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c1a2d, #0f172a);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .contenedor-final {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 16px;
+            border: 1px solid #334155;
+            padding: 2.5rem;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        
+        .titulo-final {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .subtitulo-final {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+        
+        .motivo {
+            background: rgba(239, 68, 68, 0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            font-size: 1.1rem;
+        }
+        
+        .puntuacion-final {
+            background: rgba(16, 185, 129, 0.15);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin: 2rem 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .puntuacion-valor {
+            font-size: 2.5rem;
+            color: var(--success);
+            display: block;
+            margin-top: 0.5rem;
+        }
+        
+        .diagnostico-container {
+            margin: 2.5rem 0;
+        }
+        
+        .pregunta-diagnostico {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--white);
+        }
+        
+        .opciones-diagnostico {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .opcion-diagnostico {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .opcion-diagnostico:hover {
+            transform: translateY(-5px);
+            background: rgba(37, 99, 235, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .opcion-diagnostico.correcta {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--success);
+        }
+        
+        .opcion-diagnostico.incorrecta {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--danger);
+        }
+        
+        .resultado-diagnostico {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            display: none;
+        }
+        
+        .resultado-diagnostico.correcto {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid var(--success);
+            display: block;
+        }
+        
+        .resultado-diagnostico.incorrecto {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--danger);
+            display: block;
+        }
+        
+        .botones-final {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .boton-final {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .boton-final:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+        
+        .boton-final.secundario {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #334155;
+        }
+        
+        .boton-final.secundario:hover {
+            background: rgba(30, 41, 59, 0.9);
+        }
+        
+        @media (max-width: 768px) {
+            .opciones-diagnostico {
+                grid-template-columns: 1fr;
+            }
+            
+            .contenedor-final {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="contenedor-final">
+        <h1 class="titulo-final" id="tituloFinal">Simulación Terminada</h1>
+        <h2 class="subtitulo-final" id="subtituloFinal">Sin Éxito</h2>
+        
+        <div class="motivo" id="motivoFinal">
+            Se agotó el tiempo para completar la simulación médica
+        </div>
+        
+        <div class="puntuacion-final">
+            Puntuación Final: <span class="puntuacion-valor" id="puntuacionValor">0</span>
+        </div>
+        
+        <div class="diagnostico-container">
+            <p class="pregunta-diagnostico" id="preguntaDiagnostico">¿Cuál es tu diagnóstico final?</p>
+            
+            <div class="opciones-diagnostico" id="opcionesDiagnostico">
+                <!-- Opciones generadas dinámicamente -->
+            </div>
+            
+            <div class="resultado-diagnostico" id="resultadoDiagnostico"></div>
+        </div>
+        
+        <div class="botones-final">
+            <button class="boton-final" id="btnReintentar">🔄 Reintentar Simulación</button>
+            <button class="boton-final secundario" id="btnSalir">🏠 Volver al Inicio</button>
+        </div>
+        
+        <div class="motivo" id="feedbackExito" style="display: none; background: rgba(16, 185, 129, 0.15); border-color: var(--success);">
+            <!-- Mensaje de éxito generado dinámicamente -->
+        </div>
+    </div>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Recuperar tipo de simulación
+    const tipoSimulacion = localStorage.getItem('tipoSimulacion') || 'hipoglucemia';
+    
+    // Recuperar puntuación
+    const puntuacion = localStorage.getItem('puntuacionFinal') || 0;
+    document.getElementById('puntuacionValor').textContent = puntuacion;
+    
+    // Recuperar motivo de finalización
+    const motivo = localStorage.getItem('motivoFin') || 'tiempo';
+
+    // Configuración para cada tipo de simulación
+    const config = {
+        hipoglucemia: {
+            titulo: 'Simulación Terminada',
+            subtitulo: 'Hipoglucemia',
+            opciones: [
+                "Hipoglucemia",
+                "Bradicardia Sinusal",
+                "Ataque isquemico transitorio",
+                "Accidente Cerebrovascular isquemico(ACV)"
+            ],
+            respuestaCorrecta: "hipoglucemia",
+            mensajeExito: `<p>¡Excelente trabajo! Has manejado correctamente un caso de hipoglucemia:</p>
+                           <ul>
+                             <li>Identificaste los síntomas de bajo nivel de glucosa</li>
+                             <li>Administraste glucosa de forma oportuna</li>
+                             <li>Mantuviste estable al paciente durante la crisis</li>
+                           </ul>`,
+            mensajeTiempo: 'Se agotó el tiempo para completar la simulación médica',
+            reintentar: 'simulacion.html'
+        },
+        bradicardia: {
+            titulo: 'Simulación Terminada',
+            subtitulo: 'Bradicardia Sinusal',
+            opciones: [
+                "Infarto agudo de miocardio",
+                "Bradicardia Sinusal",
+                "Hipotensión ortostática",
+                "Bloqueo auriculoventricular"
+            ],
+            respuestaCorrecta: "bradicardiasinusal",
+            mensajeExito: `<p>¡Excelente trabajo! Has manejado correctamente un caso de bradicardia sinusal:</p>
+                           <ul>
+                             <li>Identificaste el ritmo cardíaco anormal mediante ECG</li>
+                             <li>Administraste atropina para aumentar la frecuencia cardíaca</li>
+                             <li>Mantuviste estable al paciente durante la crisis</li>
+                           </ul>`,
+            mensajeTiempo: 'Se agotó el tiempo para completar la simulación médica',
+            reintentar: 'simulacion_bradicardia_sinusal.html'
+        }
+    };
+
+    // Seleccionar configuración según el tipo de simulación
+    const conf = config[tipoSimulacion] || config.hipoglucemia;
+
+    // Actualizar elementos de la página
+    document.getElementById('tituloFinal').textContent = conf.titulo;
+    document.getElementById('subtituloFinal').textContent = conf.subtitulo;
+    document.getElementById('preguntaDiagnostico').textContent = '¿Cuál es tu diagnóstico final?';
+
+    // Actualizar motivo de finalización
+    let motivoTexto = conf.mensajeTiempo;
+    if (motivo === 'exito') {
+        motivoTexto = '¡Diagnóstico y tratamiento correctos!';
+        document.getElementById('feedbackExito').innerHTML = conf.mensajeExito;
+        document.getElementById('feedbackExito').style.display = 'block';
+        document.getElementById('feedbackExito').style.background = 'rgba(16, 185, 129, 0.15)';
+        document.getElementById('feedbackExito').style.borderColor = 'var(--success)';
+    } else if (motivo === 'intubacion_fallida') {
+        motivoTexto = 'Intubación innecesaria realizada';
+    } else if (motivo === 'toracocentesis_incorrecta') {
+        motivoTexto = 'Toracocentesis realizada incorrectamente';
+    }
+    document.getElementById('motivoFinal').textContent = motivoTexto;
+
+    // Generar opciones de diagnóstico
+    const opcionesContainer = document.getElementById('opcionesDiagnostico');
+    conf.opciones.forEach(opcion => {
+        const div = document.createElement('div');
+        div.className = 'opcion-diagnostico';
+        div.textContent = opcion;
+        div.dataset.diagnostico = opcion.replace(/\s+/g, '').toLowerCase();
+        opcionesContainer.appendChild(div);
+    });
+
+    // Respuesta correcta
+    const respuestaCorrecta = conf.respuestaCorrecta;
+
+    // Elementos del DOM
+    const opciones = document.querySelectorAll('.opcion-diagnostico');
+    const resultado = document.getElementById('resultadoDiagnostico');
+    const btnReintentar = document.getElementById('btnReintentar');
+    const btnSalir = document.getElementById('btnSalir');
+
+    // Verificar diagnóstico
+    opciones.forEach(opcion => {
+        opcion.addEventListener('click', function() {
+            const diagnostico = this.dataset.diagnostico;
+            
+            // Deshabilitar opciones
+            opciones.forEach(o => o.style.pointerEvents = 'none');
+            
+            if (diagnostico === respuestaCorrecta) {
+                this.classList.add('correcta');
+                resultado.textContent = '✅ Correcto! El diagnóstico es ' + opcion.textContent + '.';
+                resultado.classList.add('correcto');
+                
+                // Sumar puntos extra por diagnóstico correcto
+                if (!localStorage.getItem('diagnosticoCorrecto')) {
+                    const nuevaPuntuacion = parseInt(puntuacion) + 20;
+                    document.getElementById('puntuacionValor').textContent = nuevaPuntuacion;
+                    localStorage.setItem('diagnosticoCorrecto', 'true');
+                }
+            } else {
+                this.classList.add('incorrecta');
+                // Obtener texto de la opción correcta
+                const textoCorrecto = conf.opciones.find(o => 
+                    o.replace(/\s+/g, '').toLowerCase() === respuestaCorrecta
+                );
+                resultado.textContent = '❌ Incorrecto. El diagnóstico correcto es ' + textoCorrecto + '.';
+                resultado.classList.add('incorrecto');
+                
+                // Resaltar opción correcta
+                const opcionCorrecta = [...opciones].find(o => 
+                    o.dataset.diagnostico === respuestaCorrecta
+                );
+                if (opcionCorrecta) opcionCorrecta.classList.add('correcta');
+            }
+        });
+    });
+    
+    // Botones de acción
+    btnReintentar.addEventListener('click', function() {
+        window.location.href = conf.reintentar;
+    });
+    
+    btnSalir.addEventListener('click', function() {
+        window.location.href = 'index.html';
+    });
+});
+</script>
+</body>
+</html>

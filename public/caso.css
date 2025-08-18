@@ -1,0 +1,162 @@
+/* ARCHIVO: caso.css */
+.caso-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.paciente-info {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.paciente-info h1 {
+    font-size: 2.2rem;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.datos-paciente {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.datos-paciente span {
+    background-color: #f1f5f9;
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    font-weight: 500;
+    color: #334155;
+}
+
+.controles-temporales {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1.8rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.controles-temporales h2 {
+    margin-bottom: 1.5rem;
+    color: #1e293b;
+    font-size: 1.5rem;
+}
+
+.temporizador {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    margin-bottom: 1.8rem;
+}
+
+.temporizador button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+
+.temporizador button:hover {
+    background: #1d4ed8;
+}
+
+#timeDisplay {
+    font-size: 1.8rem;
+    font-weight: bold;
+    min-width: 100px;
+}
+
+.btn-primario {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s, background 0.3s;
+    font-weight: 600;
+}
+
+.btn-primario:hover {
+    background: #0da271;
+    transform: translateY(-3px);
+}
+
+.historia-clinica {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1.8rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+    line-height: 1.8;
+}
+
+.historia-clinica p {
+    color: #475569;
+    font-size: 1.1rem;
+}
+
+.meta-aprendizaje {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1.8rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.meta-aprendizaje h2 {
+    margin-bottom: 1.2rem;
+    color: #1e293b;
+    font-size: 1.5rem;
+}
+
+.objetivos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.objetivo {
+    background-color: #dbeafe;
+    padding: 0.9rem 1.2rem;
+    border-radius: 8px;
+    color: #1e40af;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.objetivo::before {
+    content: "✓";
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .datos-paciente {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .temporizador {
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,48 @@
+{
+  "casos": [
+    {
+      "id": 1,
+      "titulo": "Deterioro neurológico",
+      "descripcion": "Manejo de crisis diabética aguda en paciente inconsciente",
+      "dificultad": "Moderado",
+      "dificultadClase": "difficulty-moderate",
+      "contexto": [
+        "Un hombre de 64 años fue encontrado inconsciente en el piso de su casa, fue encontrado por su hijo, cuando este fue a buscarlo por que no contestaba el teléfono. Su hijo lo trae al servicio de Urgencias del Hospital Morelos, en el trayecto comenzó a mover sus extremidades y a decir cosas incoherentes.",
+        "En este momento es capaz de hablar, con mayor fluidez y coherencia, pero arrastra un poco la lengua al hablar. Le refirió a la enfermera, que se siente mareado, y muy débil."
+      ]
+    },
+    {
+      "id": 2,
+      "titulo": "Dolor de Cabeza",
+      "descripcion": "Evaluación y tratamiento de ritmo cardíaco lento en adulto mayor",
+      "dificultad": "Basico",
+      "dificultadClase": "difficulty-basic",
+      "contexto": [
+        "Masculino de 70 años, con antecedentes de hipertensión arterial y diabetes mellitus tipo 2, presenta dolor de cabeza intenso y mareos.",
+        "Traido por personal de la Cruz Roja de México"
+      ]
+    },
+    {
+      "id": 3,
+      "titulo": "Mareo y debilidad",
+      "descripcion": "Identificación en ECG y manejo clínico en paciente asintomático",
+      "dificultad": "Básico",
+      "dificultadClase": "difficulty-basic",
+      "contexto": [
+        "Texto de contexto para caso 3 - párrafo 1...",
+        "Texto de contexto para caso 3 - párrafo 2..."
+      ]
+    },
+    {
+      "id": 4,
+      "titulo": "Hipoglucemia Severa",
+      "descripcion": "Manejo de hipoglucemia en paciente diabético inconsciente",
+      "dificultad": "Avanzado",
+      "dificultadClase": "difficulty-advanced",
+      "contexto": [
+        "Texto de contexto para caso 4 - párrafo 1...",
+        "Texto de contexto para caso 4 - párrafo 2..."
+      ]
+    }
+  ]
+}

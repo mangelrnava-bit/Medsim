@@ -1,0 +1,74 @@
+{
+  "id": "hipoglucemia",
+  "titulo": "Hipoglucemia Severa",
+  "paciente": {
+    "nombre": "Miguel Rodríguez",
+    "edad": 64,
+    "peso": "92 kg",
+    "altura": "175 cm",
+    "historia": "Diabetes tipo 2 tratada con Glibenclamida"
+  },
+  "escenario": {
+    "imagen": "imagenes/paciente64años.jpeg",
+    "descripcion": "Paciente encontrado inconsciente en casa, ahora despierto pero mareado y débil."
+  },
+  "acciones": {
+    "interrogatorio": [
+      {
+        "id": "presentacion",
+        "texto": "Presentación",
+        "icono": "👋",
+        "puntos": 5,
+        "mensaje": "Hola, buenos días señor Miguel Rodríguez. Soy el médico que lo va a atender hoy.",
+        "audio": "audio/precentacionpte.mp3"
+      },
+      {
+        "id": "sintomas",
+        "texto": "Síntomas Actuales",
+        "icono": "🤒",
+        "puntos": 5,
+        "preguntas": [
+          {
+            "id": "como_se_siente",
+            "texto": "¿Cómo se siente?",
+            "icono": "❓",
+            "mensaje": "Me siento muy mareado y débil.",
+            "audio": "audio/Mareadoydebil.mp3"
+          }
+        ]
+      }
+    ],
+    "exploracion": [
+      {
+        "id": "neurologica",
+        "texto": "Exploración Neurológica",
+        "icono": "🧠",
+        "imagen": "imagenes/exploracion_neurologica.jpg",
+        "puntos": 8
+      }
+    ],
+    "tratamiento": [
+      {
+        "id": "glucosa_50",
+        "texto": "Glucosada 50%",
+        "icono": "💉",
+        "puntos": 20,
+        "requiere": "acceso_venoso_periferico",
+        "efecto": {
+          "glucemia": 120
+        }
+      }
+    ]
+  },
+  "signos_iniciales": {
+    "glucemia": 45,
+    "fc": 110,
+    "pa": "85/55",
+    "sato2": 98
+  },
+  "objetivos": [
+    "Administrar glucosa para revertir hipoglucemia",
+    "Obtener acceso venoso",
+    "Realizar glucemia capilar"
+  ]
+}
