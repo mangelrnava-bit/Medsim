@@ -4,4 +4,6 @@ node_modules/
 .DS_Store
 # Excluir cachés de sistema
 AppData/Local/
-.vscode/extensions/
+.vscode/extensions/AppData/Local/AMD/
+AppData/
+.vscode/
