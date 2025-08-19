@@ -246,8 +246,8 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
     color: #ef4444;
     z-index: 1;
     background: rgba(30, 41, 59, 0.7);
-    padding: 3px 8px;
-    border-radius: 4px;
+    padding: 3px 6px;
+    border-radius: 2px;
     display: flex;
     align-items: center;
 }
@@ -409,14 +409,17 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
         <div class="dialogo-texto" id="dialogoTexto"></div>
         <div class="dialogo-controls">
           <div id="audioIndicator" style="color:#94a3b8;font-size:0.95rem;display:none;">🔈 Reproduciendo audio...</div>
-          <!-- Audio element for Mareadoydebil.mp3 -->
-          <audio id="mareadoydebilAudio" src="audio/Mareadoydebil.mp3" preload="auto"></audio>
+          <!-- Audio element for mp3 -->
+          <audio id="cefaleaAudio" src="audio/cefalea.mp3" preload="auto"></audio>
           <!-- Audio element for respiracionnormal.mp3 -->
           <audio id="respiracionNormalAudio" src="audio/respiracionnormal.mp3" preload="auto"></audio>
           <!-- Audio element for ritmocardiaco.mp3 -->
           <audio id="ritmoCardiacoAudio" src="audio/ritmocardiaco.mp3" preload="auto"></audio>
           <!-- Audio element for precentacionpte.mp3 -->
           <audio id="presentacionPteAudio" src="audio/precentacionpte.mp3" preload="auto"></audio>
+          <audio id="quesucedio2Audio" src="audio/quesucedio2.mp3" preload="auto"></audio>
+          <audio id="siAudio" src="audio/si.mp3" preload="auto"></audio>
+          <audio id="tomaMedicamentosAudio" src="audio/tomaMedicamentos.mp3" preload="auto"></audio> 
           <button class="dialogo-btn" id="cerrarDialogo">Cerrar</button>
         </div>
       </div>
@@ -491,6 +494,7 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
         <canvas id="ecgCanvas"></canvas>
         <div class="heart-rate-indicator" id="heartRateIndicator">42 lpm</div>
       </div>
+      </div>
 
       
       <div class="puntuacion-container">
@@ -507,121 +511,129 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
 <!-- Feedback -->
 <div class="feedback-container" id="feedbackContainer" role="status" aria-live="polite"></div>
 <script>
-// ====== MÓDULO: ECG ======
+// ====== MÓDULO: ECG MEJORADO ======
 (function(window) {
   const ecgCanvas = document.getElementById('ecgCanvas');
   const ctx = ecgCanvas.getContext('2d');
   const heartRateIndicator = document.getElementById('heartRateIndicator');
   
   // Variables de estado
-  let heartRate = 42; // Latidos por minuto iniciales
+  let heartRate = 42;
   let offset = 0;
   let lastTimestamp = 0;
   let animationFrameId = null;
-  
-  // Patrón de onda ECG (PQRST)
-  const ecgPattern = [];
-  const patternLength = 300;
-  
-  // Generar patrón ECG realista
-  function generateEcgPattern() {
-    // Limpiar array
-    ecgPattern.length = 0;
-    
-    // Base: 0 (línea isoeléctrica)
-    for (let i = 0; i < patternLength; i++) {
-      ecgPattern.push(0.5);
-    }
-    
-    // Onda P (pequeña elevación)
-    for (let i = 50; i < 70; i++) {
-      ecgPattern[i] = 0.6;
-    }
-    
-    // Complejo QRS
-    // Q
-    ecgPattern[80] = 0.45;
-    ecgPattern[81] = 0.4;
-    // R
-    ecgPattern[82] = 0.9;
-    ecgPattern[83] = 1.0;
-    ecgPattern[84] = 0.9;
-    // S
-    ecgPattern[85] = 0.4;
-    ecgPattern[86] = 0.45;
-    
-    // Onda T (elevación más amplia)
-    for (let i = 100; i < 150; i++) {
-      const t = (i - 100) / 50;
-      ecgPattern[i] = 0.5 + 0.3 * Math.sin(Math.PI * t);
-    }
-    
-    // Segmento ST
-    for (let i = 150; i < 170; i++) {
-      ecgPattern[i] = 0.55;
-    }
-  }
-  
+  let canvasWidth = 0;
+  let canvasHeight = 0;
+
   // Inicializar canvas
   function initCanvas() {
     ecgCanvas.width = ecgCanvas.offsetWidth;
     ecgCanvas.height = ecgCanvas.offsetHeight;
-    generateEcgPattern();
+    canvasWidth = ecgCanvas.width;
+    canvasHeight = ecgCanvas.height;
   }
   
-  // Función para dibujar el ECG
+  // Función para generar formas de onda más realistas
+  function getWaveformY(phase) {
+    // Onda P (suave y redondeada)
+    if (phase >= 0.0 && phase < 0.07) {
+      const pPhase = (phase - 0.0) / 0.09;
+      return -0.18 * Math.sin(pPhase * Math.PI);
+    }
+    // Segmento PR (línea isoeléctrica)
+    else if (phase >= 0.15 && phase < 0.18) {
+      return 0; // Línea base antes de QRS
+    }
+    // Complejo QRS (puntiagudo)
+    else if (phase >= 0.18 && phase < 0.25) {
+      const qrsPhase = (phase - 0.18) / 0.07; // 7% del ciclo
+      
+      // Onda R - puntiaguda y positiva
+      if (qrsPhase < 0.4) {
+        return -0.95 * (qrsPhase / 0.5); // Subida rápida
+      }
+      // Onda S - puntiaguda y negativa (misma amplitud que P)
+      else if (qrsPhase < 0.8) {
+        return -0.66 + 0.66 * ((qrsPhase - 0.4) / 0.44); // Bajada rápida
+      }
+      // Retorno a línea base
+      else {
+        return 0 + 0.2 * ((qrsPhase - 0.8) / 0.2); // Recuperación
+      }
+    }
+    // Segmento ST (línea isoeléctrica)
+    else if (phase >= 0.25 && phase < 0.4) {
+      return 0;
+    }
+    // Onda T (suave, 70% más grande que P)
+    else if (phase >= 0.16 && phase < 0.56) {
+      const tPhase = (phase - 0.38) / 0.2;
+      return -0.21 * Math.sin(tPhase * Math.PI);
+    }
+    // Línea base
+    return 0;
+  }
+
+  // Función para dibujar el ECG mejorado
   function drawECG(timestamp) {
     if (!lastTimestamp) lastTimestamp = timestamp;
     const elapsed = timestamp - lastTimestamp;
     lastTimestamp = timestamp;
     
-    // Ajustar el desplazamiento según la frecuencia cardíaca
-    // A menor frecuencia, más lento el movimiento
+    // Ajustar velocidad según FC
     const speed = 0.2 * (60 / heartRate);
-    offset = (offset + speed) % patternLength;
+    offset = (offset + speed) % canvasWidth;
     
     // Limpiar canvas
-    ctx.clearRect(0, 0, ecgCanvas.width, ecgCanvas.height);
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     
     // Dibujar rejilla
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.lineWidth = 1;
     
-    // Líneas verticales (cada 50px)
-    for (let x = 0; x < ecgCanvas.width; x += 50) {
+    // Líneas verticales
+    for (let x = 0; x < canvasWidth; x += 25) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
-      ctx.lineTo(x, ecgCanvas.height);
+      ctx.lineTo(x, canvasHeight);
       ctx.stroke();
     }
     
-    // Líneas horizontales (cada 25px)
-    for (let y = 0; y < ecgCanvas.height; y += 25) {
+    // Líneas horizontales
+    for (let y = 0; y < canvasHeight; y += 25) {
       ctx.beginPath();
       ctx.moveTo(0, y);
-      ctx.lineTo(ecgCanvas.width, y);
+      ctx.lineTo(canvasWidth, y);
       ctx.stroke();
     }
     
     // Dibujar trazado ECG
     ctx.beginPath();
     ctx.strokeStyle = '#00ff8c';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     
-    for (let x = 0; x < ecgCanvas.width; x++) {
-      const patternIndex = Math.floor((x + offset) % patternLength);
-      const y = ecgCanvas.height - (ecgPattern[patternIndex] * ecgCanvas.height);
+    const centerY = canvasHeight / 2;
+    const amplitude = canvasHeight * 0.3;
+    const pixelsPerSecond = 100; // Ajusta según la velocidad deseada
+    const secondsPerBeat = 60 / heartRate;
+    const cycleLength = secondsPerBeat * pixelsPerSecond;
+    
+    for (let x = 0; x < canvasWidth; x++) {
+      const globalPos = (x + offset);
+      const phase = (globalPos % cycleLength) / cycleLength;
+      
+      const waveY = getWaveformY(phase);
+      const yValue = centerY + waveY * amplitude;
       
       if (x === 0) {
-        ctx.moveTo(x, y);
+        ctx.moveTo(x, yValue);
       } else {
-        ctx.lineTo(x, y);
+        ctx.lineTo(x, yValue);
       }
     }
     
     ctx.stroke();
     
-    // Continuar animación
     animationFrameId = requestAnimationFrame(drawECG);
   }
   
@@ -646,13 +658,13 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
     heartRate = newRate;
     heartRateIndicator.textContent = heartRate + ' lpm';
     
-    // Cambiar color durante la transición
+    // Cambiar color según FC
     if (heartRate < 50) {
-      heartRateIndicator.style.color = '#ef4444'; // Rojo para bradicardia
+      heartRateIndicator.style.color = '#ef4444';
     } else if (heartRate < 60) {
-      heartRateIndicator.style.color = '#ffdd57'; // Amarillo
+      heartRateIndicator.style.color = '#ffdd57';
     } else {
-      heartRateIndicator.style.color = '#10b981'; // Verde para frecuencia normal
+      heartRateIndicator.style.color = '#10b981';
     }
   }
   
@@ -666,7 +678,7 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
       currentRate += 1;
       updateHeartRate(currentRate);
       
-      // Actualizar también el valor en la tarjeta
+      // Actualizar tarjeta de FC
       document.getElementById('fcValor').textContent = currentRate;
       document.getElementById('fcCard').dataset.value = currentRate;
       
@@ -680,6 +692,12 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
   window.addEventListener('load', () => {
     initCanvas();
     startECG();
+    updateHeartRate(42);
+  });
+  
+  // Manejar redimensionamiento
+  window.addEventListener('resize', () => {
+    initCanvas();
   });
   
   // Exponer API
@@ -688,6 +706,61 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
     stop: stopECG,
     updateHeartRate: updateHeartRate,
     increaseHeartRate: increaseHeartRate
+  };
+})(window);
+
+// ====== MÓDULO: INTERACCIÓN ======
+(function(window) {
+  // Mostrar feedback
+  function mostrarFeedback(msg, esError = false) {
+    const fb = document.getElementById('feedbackContainer');
+    if (!fb) return;
+    
+    fb.textContent = msg;
+    fb.style.borderLeftColor = esError ? 'var(--danger)' : 'var(--success)';
+    fb.classList.add('visible');
+    
+    clearTimeout(fb._t);
+    fb._t = setTimeout(() => fb.classList.remove('visible'), 3000);
+  }
+  
+  // Manejar botones de acción
+  document.querySelectorAll('.accion-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const accion = btn.getAttribute('data-accion');
+      if (accion === 'atropina') {
+        window.ECG.increaseHeartRate();
+        mostrarFeedback('💉 Atropina administrada. Frecuencia cardíaca aumentando...');
+      } else if (accion === 'ecg') {
+        mostrarFeedback('📈 ECG realizado correctamente');
+      } else {
+        mostrarFeedback(`Acción: ${accion}`);
+      }
+    });
+  });
+  
+  // Manejar botones de categoría
+  document.querySelectorAll('.categoria-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const categoria = btn.getAttribute('data-categoria');
+      const contenedorId = `${categoria}Acciones`;
+      
+      // Ocultar todos los contenedores
+      document.querySelectorAll('.acciones-container').forEach(c => {
+        c.classList.remove('visible');
+      });
+      
+      // Mostrar contenedor actual
+      const contenedor = document.getElementById(contenedorId);
+      if (contenedor) {
+        contenedor.classList.add('visible');
+      }
+    });
+  });
+  
+  // Exponer API
+  window.UI = {
+    mostrarFeedback: mostrarFeedback
   };
 })(window);
 
@@ -1253,68 +1326,52 @@ cerrarModalECGBtn?.addEventListener('click', () => {
     }
   }
 
-  function reproduceSpecificAudio(src){
-    let audioToPlay = null;
+function reproduceSpecificAudio(src) {
+  let audioToPlay = null;
+  const audioMap = {
+    "audio/si.mp3": siAudio,
+    "audio/respiracionnormal.mp3": respiracionNormalAudio,
+    "audio/ritmocardiaco.mp3": ritmoCardiacoAudio,
+    "audio/precentacionpte.mp3": presentacionPteAudio,
+    "audio/cefalea.mp3": document.getElementById('cefaleaAudio'),
+    "audio/quesucedio2.mp3": document.getElementById('quesucedio2Audio'),
+    "audio/tomaMedicamentos.mp3": document.getElementById('tomaMedicamentosAudio')
+   
+  };
+  
+  audioToPlay = audioMap[src];
 
-    if (src === "audio/Mareadoydebil.mp3") {
-      audioToPlay = mareadoydebilAudio;
-    } else if (src === "audio/respiracionnormal.mp3") {
-      audioToPlay = respiracionNormalAudio;
-    } else if (src === "audio/ritmocardiaco.mp3") {
-      audioToPlay = ritmoCardiacoAudio;
-    } else if (src === "audio/precentacionpte.mp3") { 
-      audioToPlay = presentacionPteAudio;
-    } else if (src === "audio/Recupera alerta en el hospital.mp3") {
-      // Reusing mareadoydebilAudio if no separate element for this
-      audioToPlay = mareadoydebilAudio;
-    } else if (src === "audio/Tengounperro.mp3") {
-      // Reusing mareadoydebilAudio if no separate element for this
-      audioToPlay = mareadoydebilAudio;
-    }
-    // Add more else if blocks for other specific audio files as needed
+  if (audioToPlay) {
+    currentPlayingAudio = audioToPlay;
+    audioToPlay.src = src;
+    audioToPlay.load();
 
-    if (audioToPlay) {
-        currentPlayingAudio = audioToPlay; // Set the currently playing audio
-        audioToPlay.src = src;
-        audioToPlay.load(); // Request to load the audio
+    audioToPlay.oncanplaythrough = () => {
+      audioToPlay.play().then(() => {
+        audioIndicator.textContent = '🔈 Reproduciendo audio...';
+      }).catch(error => {
+        console.error("Error playing audio:", error);
+        audioIndicator.textContent = '❌ Error al reproducir audio';
+      });
+    };
 
-        audioToPlay.oncanplaythrough = () => {
-            audioToPlay.play().then(() => {
-                audioIndicator.textContent = '🔈 Reproduciendo audio...';
-            }).catch(error => {
-                console.error("Error playing audio (oncanplaythrough catch):", error);
-                audioIndicator.textContent = '❌ Error al reproducir audio. (Ruta: ' + src + ')';
-                dialogoContainer.classList.remove('visible');
-                dialogoContainer.setAttribute('aria-hidden','true');
-                audioIndicator.style.display = 'none';
-                currentPlayingAudio = null;
-                stopAudioTrace(); // Stop trace on play error
-            });
-        };
+    audioToPlay.onended = () => {
+      audioIndicator.style.display = 'none';
+      dialogoContainer.classList.remove('visible');
+      dialogoContainer.setAttribute('aria-hidden','true');
+      currentPlayingAudio = null;
+      stopAudioTrace();
+    };
 
-        audioToPlay.onended = () => {
-            audioIndicator.style.display = 'none';
-            dialogoContainer.classList.remove('visible');
-            dialogoContainer.setAttribute('aria-hidden','true');
-            currentPlayingAudio = null;
-            stopAudioTrace(); // Stop trace on audio end
-        };
-
-        audioToPlay.onerror = () => {
-            console.error("Error loading audio (onerror): Failed to load source: " + src);
-            audioIndicator.textContent = '❌ Error al cargar o reproducir audio. Verifique la ruta del archivo: ' + src;
-            dialogoContainer.classList.remove('visible');
-            dialogoContainer.setAttribute('aria-hidden','true');
-            audioIndicator.style.display = 'none';
-            currentPlayingAudio = null;
-            stopAudioTrace(); // Stop trace on load error
-        };
-    } else {
-        console.error("Audio element not found for source:", src);
-        audioIndicator.style.display = 'none';
-        stopAudioTrace(); // Stop trace if audio element is not found
-    }
+    audioToPlay.onerror = () => {
+      console.error("Error loading audio:", src);
+      audioIndicator.textContent = '❌ Error al cargar audio';
+    };
+  } else {
+    console.error("Audio element not found for:", src);
+    audioIndicator.textContent = '❌ Audio no disponible';
   }
+}
 
   document.getElementById('cerrarDialogo')?.addEventListener('click', ()=>{
     dialogoContainer.classList.remove('visible');
