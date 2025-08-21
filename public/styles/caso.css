@@ -1,0 +1,317 @@
+/* ARCHIVO: caso.css - Estilos optimizados para página de caso médico */
+
+/* ===== VARIABLES Y CONFIGURACIÓN ===== */
+:root {
+  /* Colores principales (consistentes con index.html) */
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --secondary: #0ea5e9;
+  --dark: #1e293b;
+  --dark-light: #334155;
+  --light: #f1f5f9;
+  --accent: #10b981;
+  --accent-dark: #0da271;
+  --text: #334155;
+  --text-light: #475569;
+  --white: #ffffff;
+  --border: #e2e8f0;
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  
+  /* Espaciado */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.8rem;
+  --spacing-md: 1.2rem;
+  --spacing-lg: 1.8rem;
+  --spacing-xl: 2.5rem;
+  
+  /* Bordes */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+  
+  /* Transiciones */
+  --transition: all 0.3s ease;
+}
+
+/* ===== RESET Y ESTILOS BASE ===== */
+.caso-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+/* ===== COMPONENTES ===== */
+
+/* Información del paciente */
+.paciente-info {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--border);
+}
+
+.paciente-info h1 {
+  font-size: 2.2rem;
+  color: var(--dark);
+  margin-bottom: var(--spacing-xs);
+}
+
+.datos-paciente {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-md);
+}
+
+.datos-paciente span {
+  background-color: var(--light);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-xl);
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Controles temporales */
+.controles-temporales {
+  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
+}
+
+.controles-temporales h2 {
+  margin-bottom: var(--spacing-lg);
+  color: var(--dark);
+  font-size: 1.5rem;
+}
+
+.temporizador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.temporizador button {
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.temporizador button:hover,
+.temporizador button:focus {
+  background: var(--primary-dark);
+  outline: none;
+}
+
+#timeDisplay {
+  font-size: 1.8rem;
+  font-weight: bold;
+  min-width: 100px;
+}
+
+/* Botones */
+.btn-primario {
+  background: var(--accent);
+  color: var(--white);
+  border: none;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 600;
+}
+
+.btn-primario:hover,
+.btn-primario:focus {
+  background: var(--accent-dark);
+  transform: translateY(-3px);
+  outline: none;
+}
+
+/* Historia clínica */
+.historia-clinica {
+  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-xl);
+  line-height: 1.8;
+}
+
+.historia-clinica p {
+  color: var(--text-light);
+  font-size: 1.1rem;
+}
+
+/* Meta de aprendizaje */
+.meta-aprendizaje {
+  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.meta-aprendizaje h2 {
+  margin-bottom: var(--spacing-md);
+  color: var(--dark);
+  font-size: 1.5rem;
+}
+
+.objetivos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.objetivo {
+  background-color: #dbeafe;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  color: #1e40af;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.objetivo::before {
+  content: "✓";
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+/* Lista de soluciones */
+.lista-soluciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-md);
+}
+
+.opcion-solucion {
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid var(--dark-light);
+  cursor: pointer;
+  color: #e2e8f0;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.opcion-solucion:hover,
+.opcion-solucion:focus {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* ===== MEDIA QUERIES ===== */
+@media (max-width: 768px) {
+  .caso-container {
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+  }
+  
+  .paciente-info h1 {
+    font-size: 1.8rem;
+  }
+  
+  .datos-paciente {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+  
+  .temporizador {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  
+  .lista-soluciones {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .controles-temporales,
+  .historia-clinica,
+  .meta-aprendizaje {
+    padding: var(--spacing-md);
+  }
+  
+  .paciente-info h1 {
+    font-size: 1.6rem;
+  }
+  
+  .controles-temporales h2,
+  .meta-aprendizaje h2 {
+    font-size: 1.3rem;
+  }
+  
+  .btn-primario {
+    padding: 0.8rem 1.8rem;
+    font-size: 1rem;
+  }
+}
+
+/* Utilidades de accesibilidad */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Modo de alto contraste para mejor accesibilidad */
+@media (prefers-contrast: high) {
+  .objetivo {
+    border: 2px solid #1e40af;
+  }
+  
+  .opcion-solucion {
+    border-width: 2px;
+  }
+}
+
+/* Reduce movimiento para usuarios que lo prefieren */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .btn-primario:hover,
+  .btn-primario:focus {
+    transform: none;
+  }
+  
+  .case-card:hover {
+    transform: none;
+  }
+}

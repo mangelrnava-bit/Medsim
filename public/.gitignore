@@ -1,0 +1,27 @@
+echo "# Dependencias
+node_modules/
+npm-debug.log*
+
+# Archivos de entorno
+.env
+.env.local
+.env.production
+
+# Logs
+logs
+*.log
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Builds
+dist/
+build/
+" > .gitignore
