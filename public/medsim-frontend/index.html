@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MedSim - Simulador Médico para entrenamiento en emergencias clínicas con casos interactivos">
+    <title>MedSim - Simulador Médico</title>
+    
+    <!-- Google Analytics optimizado -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TUCODIGO"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-TUCODIGO');
+    </script>
+    
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #0ea5e9;
+            --dark: #1e293b;
+            --light: #f1f5f9;
+            --accent: #10b981;
+            --text: #334155;
+            --text-light: #475569;
+            --white: #ffffff;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-hover: 0 6px 16px rgba(0,0,0,0.12);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        nav a:hover,
+        nav a:focus {
+            color: var(--primary);
+            outline: none;
+        }
+
+        #loginBtn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        #loginBtn:hover,
+        #loginBtn:focus {
+            background: #1d4ed8;
+            outline: none;
+        }
+
+        .hero {
+            min-height: 70vh;
+            background: linear-gradient(120deg, #e0f2fe 0%, #bae6fd 100%);
+            display: flex;
+            align-items: center;
+            padding: 2rem 5%;
+            text-align: center;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .hero h1 {
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        .hero p {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            margin-bottom: 2.5rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            background: var(--accent);
+            color: var(--white);
+            font-size: 1.1rem;
+            padding: 0.8rem 2.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .cta-button:hover,
+        .cta-button:focus {
+            transform: translateY(-3px);
+            background: #0da271;
+            outline: none;
+        }
+
+        .simulations {
+            padding: 4rem 5%;
+            background-color: #f8fafc;
+            flex-grow: 1;
+        }
+
+        .simulations h2 {
+            text-align: center;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            margin-bottom: 2.5rem;
+            color: var(--dark);
+        }
+
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.8rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .case-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.8rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .case-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .case-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+            color: var(--primary);
+        }
+
+        .case-card p {
+            color: var(--text-light);
+            margin-bottom: 1.2rem;
+            flex-grow: 1;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 1.2rem;
+            align-self: flex-start;
+        }
+
+        .difficulty-basic {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .difficulty-intermediate {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .difficulty-moderate {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .difficulty-advanced {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .case-btn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            width: 100%;
+            transition: var(--transition);
+        }
+
+        .case-btn:hover,
+        .case-btn:focus {
+            background: #1d4ed8;
+            outline: none;
+        }
+
+        footer {
+            background: var(--dark);
+            color: var(--white);
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        footer a {
+            color: var(--secondary);
+            text-decoration: none;
+        }
+
+        footer a:hover,
+        footer a:focus {
+            text-decoration: underline;
+            outline: none;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary);
+            color: white;
+            padding: 8px;
+            z-index: 1000;
+            transition: top 0.3s;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .hero {
+                padding: 3rem 5%;
+            }
+            
+            .cases-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: var(--dark);
+            }
+            
+            nav ul {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                text-align: center;
+            }
+            
+            nav ul.show {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                padding: 2rem 5%;
+            }
+            
+            .simulations {
+                padding: 2rem 5%;
+            }
+            
+            .case-card {
+                padding: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Saltar al contenido principal</a>
+    
+    <header>
+        <div class="logo" aria-label="MedSim">MedSim</div>
+        <button class="mobile-menu-btn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+        <nav aria-label="Navegación principal">
+            <ul>
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#simulaciones">Simulaciones</a></li>
+                <li><a href="#acerca">Acerca de</a></li>
+            </ul>
+        </nav>
+        <button id="loginBtn" aria-label="Iniciar sesión">Iniciar Sesión</button>
+    </header>
+
+    <main id="main">
+        <section class="hero" id="inicio" aria-labelledby="hero-heading">
+            <div class="hero-content">
+                <h1 id="hero-heading">Entrenamiento Médico en Simulaciones Reales</h1>
+                <p>Domina emergencias clínicas con nuestros casos interactivos. Practica diagnósticos y tratamientos sin riesgo para pacientes reales.</p>
+                <button class="cta-button">Comenzar Ahora</button>
+            </div>
+        </section>
+
+        <section class="simulations" id="simulaciones" aria-labelledby="simulaciones-heading">
+            <h2 id="simulaciones-heading">Nuestros Casos Médicos</h2>
+            <div class="cases-grid" role="list">
+                <!-- Los casos se insertarán con JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <footer aria-label="Pie de página">
+        <p>© 2025 MedSim - Simulador Médico para Profesionales de la Salud</p>
+        <p><a href="feedback.html">Enviar feedback</a></p>
+    </footer>
+
+    <script>
+        // Datos de las simulaciones
+        const medicalCases = [
+            {
+                id: 1,
+                title: "Deterioro neurológico",
+                description: "Manejo de crisis diabética aguda en paciente inconsciente",
+                difficulty: "Moderado",
+                difficultyClass: "difficulty-moderate"
+            },
+            {
+                id: 2,
+                title: "Dolor de Cabeza",
+                description: "Evaluación y tratamiento de ritmo cardíaco lento en adulto mayor",
+                difficulty: "Básico",
+                difficultyClass: "difficulty-basic"
+            },
+            {
+                id: 3,
+                title: "Lipotimia",
+                description: "Almendra es una joven de 23 años, que pierde el equilibrio y la fuerza durante un entrenamiento de cardio, en el gimnasio.",
+                difficulty: "Básico",
+                difficultyClass: "difficulty-basic"
+            },
+            {
+                id: 4,
+                title: "Hipoglucemia Severa",
+                description: "Manejo de hipoglucemia en paciente diabético inconsciente",
+                difficulty: "Avanzado",
+                difficultyClass: "difficulty-advanced",
+                archivo: "simulacion_nuevo.html"
+            }
+        ];
+
+        // Insertar casos en el grid
+        function renderCases() {
+            const grid = document.querySelector('.cases-grid');
+            
+            medicalCases.forEach(caseItem => {
+                const caseCard = document.createElement('div');
+                caseCard.className = 'case-card';
+                caseCard.setAttribute('role', 'listitem');
+                caseCard.innerHTML = `
+                    <h3>${caseItem.title}</h3>
+                    <p>${caseItem.description}</p>
+                    <span class="difficulty ${caseItem.difficultyClass}">Dificultad: ${caseItem.difficulty}</span>
+                    <button class="case-btn" data-id="${caseItem.id}" aria-label="Practicar caso ${caseItem.title}">Practicar</button>
+                `;
+                grid.appendChild(caseCard);
+            });
+        }
+
+        // Manejo de eventos
+        function setupEventListeners() {
+            // Botón "Comenzar Ahora"
+            document.querySelector('.cta-button').addEventListener('click', () => {
+                document.getElementById('simulaciones').scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // Botones de casos
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('case-btn')) {
+                    const caseId = e.target.getAttribute('data-id');
+                    sessionStorage.setItem('casoSeleccionado', caseId);
+                    window.location.href = 'caso.html';
+                }
+            });
+            
+            // Botón de inicio de sesión
+            document.getElementById('loginBtn').addEventListener('click', () => {
+                alert('Funcionalidad de inicio de sesión (próximamente)');
+            });
+            
+            // Menú móvil
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            const navMenu = document.querySelector('nav ul');
+            
+            if (menuBtn && navMenu) {
+                menuBtn.addEventListener('click', () => {
+                    const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
+                    menuBtn.setAttribute('aria-expanded', !expanded);
+                    navMenu.classList.toggle('show');
+                });
+            }
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCases();
+            setupEventListeners();
+        });
+    </script>
+</body>
+</html>

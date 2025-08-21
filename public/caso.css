@@ -141,7 +141,28 @@
     display: flex;
     align-items: center;
 }
+.lista-soluciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
 
+.opcion-solucion {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: rgba(30,41,59,.7);
+  border: 1px solid #334155;
+  cursor: pointer;
+  color: #e2e8f0;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.opcion-solucion:hover {
+  background: rgba(37,99,235,0.15);
+  border-color: var(--primary);
+}
 .objetivo::before {
     content: "✓";
     margin-right: 10px;

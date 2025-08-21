@@ -1624,6 +1624,7 @@ if (btnECG) {
      // Volver al menú principal (Antecedentes)
     if (volverAntecedentes) {
         volverAntecedentes.addEventListener('click', () => {
+          colapsarSintomas(); // Colapsar síntomas si están abiertos
             // Restaurar todos los botones principales de interrogatorio
             ELEMENTOS_GRID_INTERROGATORIO.forEach(btn => {
                 btn.style.display = 'flex';

@@ -50,9 +50,9 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
 .visualizacion-medica {
   flex: 1 1 0;
   display: flex;
-  align-items: stretch;
-  justify-content: stretch;
-  padding: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
   background: rgba(15,23,42,.5);
   min-height: 0;
 }
@@ -125,14 +125,14 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
 
 
 .img-paciente {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  max-height: none;
+  width: max-content;
+  height: auto;
+  max-width: 99%;
+  max-height: 99%;
   display: block;
-  margin: 0;
+  margin: 0 auto;
   border-radius: 16px;
-  object-fit: cover;
+  object-fit: fill;
 }
 /* *** PACIENTE Estilos para el modal de imagen flotante *** */
 .modal-imagen-flotante {
@@ -268,6 +268,30 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
     100% { transform: scale(1); }
 }
 
+/* Estilos para el modal de soluciones IV */
+.lista-soluciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.opcion-solucion {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: rgba(30,41,59,.7);
+  border: 1px solid #334155;
+  cursor: pointer;
+  color: #e2e8f0;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.opcion-solucion:hover {
+  background: rgba(37,99,235,0.15);
+  border-color: var(--primary);
+}
+
 </style>
 </head>
 <body>
@@ -349,8 +373,7 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
       <button class="categoria-btn" data-categoria="tratamiento">💊 Tratamiento</button>
       <div class="acciones-container" id="tratamientoAcciones">
         <div class="acciones-grid">
-          <button class="accion-btn" data-accion="solucionsalina">💧 Soluciones Salina 0.9%</button>
-          <button class="accion-btn" data-accion="glucosa_50">💧 Glucosada al 50% 50cc</button>
+          <button class="accion-btn" data-accion="soluciones_iv">💧 Soluciones IV</button>
           <button class="accion-btn" data-accion="glucagon">💊 Glucagón IM</button>
           <button class="accion-btn" data-accion="oxigeno">🌬️ Oxígeno</button>
           <button class="accion-btn" data-accion="atropina">💉 Atropina</button>
@@ -362,7 +385,7 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
   <!-- CENTRO -->
   <main class="panel-central">
     <div class="visualizacion-medica">
-      <img src="imagenes/pacientemujer23años.jpeg" alt="Paciente Almendra Vidriales" class="img-paciente">
+      <img src="imagenes/almendra.png" alt="Paciente Almendra Vidriales" class="img-paciente">
 
       <!-- Menú flotante de Exploración -->
       <div id="menuExploracionFlotante" class="floating-exploracion" aria-hidden="true">
@@ -390,6 +413,26 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
               <h3 id="modalImagenTitulo"></h3>
               <img id="imagenExploracionDetalle" src="" alt="Detalle de la exploración">
           </div>
+      </div>
+
+      <!-- Modal para Soluciones IV -->
+      <div id="modalSolucionesIV" class="modal-imagen-flotante" aria-hidden="true">
+        <div class="modal-contenido">
+          <button class="cerrar-modal" id="cerrarModalSolucionesIV" aria-label="Cerrar modal">✕</button>
+          <h3>Seleccione una Solución IV</h3>
+          <div class="lista-soluciones">
+            <button class="opcion-solucion" data-solucion="Solucion Salina 0.9%">Solución Salina 0.9%</button>
+            <button class="opcion-solucion" data-solucion="Solucion Glucosada 5%">Solución Glucosada 5%</button>
+            <button class="opcion-solucion" data-solucion="Solucion Ringer Lactato">Solución Ringer Lactato</button>
+            <button class="opcion-solucion" data-solucion="Solucion Glucosada 10%">Solución Glucosada 10%</button>
+            <button class="opcion-solucion" data-solucion="Solucion Salina Hipertonica 3%">Solución Salina Hipertónica 3%</button>
+            <button class="opcion-solucion" data-solucion="Dextrano 40">Dextrano 40</button>
+            <button class="opcion-solucion" data-solucion="Hidroxietil Almidon">Hidroxietil Almidón</button>
+            <button class="opcion-solucion" data-solucion="Gelatina">Gelatina</button>
+            <button class="opcion-solucion" data-solucion="Albúmina 5%">Albúmina 5%</button>
+            <button class="opcion-solucion" data-solucion="Albúmina 25%">Albúmina 25%</button>
+          </div>
+        </div>
       </div>
 
       <!-- Reporte Química (flotante) -->
@@ -435,19 +478,32 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
         </table>
       </div>
 
-      <!-- Diálogo (presentación / respuesta paciente) -->
+     
+      </div>
+      
+   
+
+  <!-- Diálogo (presentación / respuesta paciente) -->
       <div class="dialogo-container" id="dialogoContainer" aria-hidden="true">
         <div class="dialogo-texto" id="dialogoTexto"></div>
         <div class="dialogo-controls">
           <div id="audioIndicator" style="color:#94a3b8;font-size:0.95rem;display:none;">🔈 Reproduciendo audio...</div>
-          <audio id="presentacionAudio" preload="auto"></audio>
+          <!-- Audio element for mp3 -->
+          <audio id="sintomasAudio" src="audio/comosesiente3.mp3" preload="auto"></audio>
+          <!-- Audio element for respiracionnormal.mp3 -->
+          <audio id="respiracionNormalAudio" src="audio/respiracionnormal.mp3" preload="auto"></audio>
+          <!-- Audio element for ritmocardiaco.mp3 -->
+          <audio id="ritmoCardiacoAudio" src="audio/ritmocardiaco.mp3" preload="auto"></audio>
+          <!-- Audio element for precentacionpte.mp3 -->
+          <audio id="presentacionAudio" src="audio/holadoctoranamaria.mp3" preload="auto"></audio>
+          <audio id="quesucedioAudio" src="audio/lipotimiaanamaria.mp3" preload="auto"></audio>
+          <audio id="diabetesAudio" src="audio/nodiabetesanamaria.mp3" preload="auto"></audio>
+          <audio id="alergiasAudio" src="audio/no.mp3" preload="auto"></audio> 
+          <audio id="nohayaccesoAudio" src="audio/nohayacceso.mp3" preload="auto"></audio>
           <button class="dialogo-btn" id="cerrarDialogo">Cerrar</button>
         </div>
       </div>
-      
-    </div>
   </main>
-
   <!-- DERECHO -->
   <aside class="panel-monitoreo" aria-label="Monitoreo y diagnóstico">
     <div class="monitoreo-header"><h2>Información del Paciente</h2></div>
@@ -895,7 +951,7 @@ body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direct
       case 'presentacion':
         const mensaje = `Hola doctor, encantada de conocerlo`;
         if (window.UI && window.UI.mostrarDialogo) {
-          window.UI.mostrarDialogo(mensaje, true);
+          window.UI.mostrarDialogo(mensaje, true, 'audio/holadoctoranamaria.mp3');
         }
 
         if (!acciones.has('correcto_presentacion')) {
@@ -1227,6 +1283,10 @@ cerrarModalECGBtn?.addEventListener('click', () => {
   const dialogoTexto = document.getElementById('dialogoTexto');
   const audioIndicator = document.getElementById('audioIndicator');
   // Referencia a los elementos de audio
+  const sintomasAudio = document.getElementById('sintomasAudio');
+  const quesucedioAudio = document.getElementById('quesucedioAudio');
+  const diabetesAudio = document.getElementById('diabetesAudio');
+  const alergiasAudio = document.getElementById('alergiasAudio');
   const presentacionAudio = document.getElementById('presentacionAudio');
   let currentPlayingAudio = null; // Track which audio is currently playing
 
@@ -1335,12 +1395,41 @@ cerrarModalECGBtn?.addEventListener('click', () => {
     
     if(conAudio && audioSrc){
       audioIndicator.style.display = 'inline-block';
-      // Reproducir audio
-      if (presentacionAudio) {
-        presentacionAudio.src = audioSrc;
-        presentacionAudio.play();
-        currentPlayingAudio = presentacionAudio;
+      
+      // Determinar qué audio reproducir según la fuente
+      let audioToPlay = null;
+      switch(audioSrc) {
+        case 'audio/comosesiente3.mp3':
+          audioToPlay = sintomasAudio;
+          break;
+        case 'audio/lipotimiaanamaria.mp3':
+          audioToPlay = quesucedioAudio;
+          break;
+        case 'audio/nodiabetesanamaria.mp3':
+          audioToPlay = diabetesAudio;
+          break;
+        case 'audio/no.mp3':
+          audioToPlay = alergiasAudio;
+          break;
+        case 'audio/holadoctoranamaria.mp3':
+          audioToPlay = presentacionAudio;
+          break;
+        default:
+          audioToPlay = null;
+      }
+      
+      // Reproducir audio si está disponible
+      if (audioToPlay) {
+        audioToPlay.play();
+        currentPlayingAudio = audioToPlay;
         startAudioTrace(); // Start trace animation when audio begins
+        
+        // Detener automáticamente cuando termine el audio
+        audioToPlay.onended = function() {
+          audioIndicator.style.display = 'none';
+          stopAudioTrace();
+          currentPlayingAudio = null;
+        };
       }
     } else {
       audioIndicator.style.display = 'none';
@@ -1574,12 +1663,14 @@ if (btnECG) {
     // Manejo del botón "Antecedentes Médicos"
     if (btnAntecedentes) {
         btnAntecedentes.addEventListener('click', () => {
+        // Colapsar el submenú de síntomas si está abierto
+    colapsarSintomas();
             // Ocultar todos los botones principales de interrogatorio EXCEPTO el botón de Antecedentes Médicos
-            ELEMENTOS_GRID_INTERROGATORIO.forEach(btn => {
-                if (btn !== ELEMENTOS_ANTECEDENTES.btn) { // If it's not the Antecedentes button itself
-                    btn.style.display = 'none';
-                }
-            });
+    ELEMENTOS_GRID_INTERROGATORIO.forEach(btn => {
+      if (btn !== btnAntecedentes) {
+        btn.style.display = 'none';
+      }
+    });
 
             // Mostrar el submenú de antecedentes
             antecedentesPreguntas.style.display = 'block';
@@ -1596,10 +1687,11 @@ if (btnECG) {
      // Volver al menú principal (Antecedentes)
     if (volverAntecedentes) {
         volverAntecedentes.addEventListener('click', () => {
-            // Restaurar todos los botones principales de interrogatorio
-            ELEMENTOS_GRID_INTERROGATORIO.forEach(btn => {
-                btn.style.display = 'flex';
-            });
+           colapsarSintomas();
+                // Restaurar todos los botones principales de interrogatorio
+    ELEMENTOS_GRID_INTERROGATORIO.forEach(btn => {
+      btn.style.display = 'flex';
+    });
             
             // Ocultar submenú
             antecedentesPreguntas.style.display = 'none';
@@ -1680,6 +1772,55 @@ window.UI.mostrarModalECG = function() {
         modalECG.setAttribute('aria-hidden', 'false');
     }
 };
+
+// Modal Soluciones IV
+const modalSolucionesIV = document.getElementById('modalSolucionesIV');
+const cerrarModalSolucionesIV = document.getElementById('cerrarModalSolucionesIV');
+const opcionesSolucion = document.querySelectorAll('.opcion-solucion');
+
+// Mostrar modal al hacer clic en "Soluciones IV"
+document.querySelector('.accion-btn[data-accion="soluciones_iv"]')?.addEventListener('click', () => {
+  modalSolucionesIV.classList.add('visible');
+  modalSolucionesIV.setAttribute('aria-hidden', 'false');
+});
+
+// Cerrar modal
+cerrarModalSolucionesIV?.addEventListener('click', () => {
+  modalSolucionesIV.classList.remove('visible');
+  modalSolucionesIV.setAttribute('aria-hidden', 'true');
+});
+
+// Manejar selección de solución
+opcionesSolucion.forEach(btn => {
+  btn.addEventListener('click', function() {
+    const solucion = this.dataset.solucion;
+    
+    // Verificar si tiene acceso venoso
+    if (!window.SCORING.hasAction('acceso_venoso_periferico')) {
+      // Mostrar mensaje de error
+      window.UI.mostrarFeedback('❌ No ha indicado ningún acceso venoso por donde administrar esta indicación.', true);
+      
+      // Reproducir audio de advertencia
+      const nohayaccesoAudio = document.getElementById('nohayaccesoAudio');
+      if (nohayaccesoAudio) {
+        nohayaccesoAudio.currentTime = 0;
+        nohayaccesoAudio.play().catch(e => console.log("Error reproduciendo audio: ", e));
+      }
+      
+      // Penalizar con -20 puntos
+      window.SCORING.addPoints(-20);
+      return;
+    }
+    
+    // Si tiene acceso, proceder con la administración
+    window.UI.mostrarFeedback(`💧 ${solucion} administrada`);
+    modalSolucionesIV.classList.remove('visible');
+    modalSolucionesIV.setAttribute('aria-hidden', 'true');
+    
+    // Registrar la acción de administrar solución (opcional, si quieres llevar registro)
+    window.SCORING.registerAction(`admin_${solucion.replace(/\s+/g, '_').toLowerCase()}`, 0);
+  });
+});
 
 // Pausa / volver
 document.getElementById('pausaBtn')?.addEventListener('click', ()=> mostrarFeedback('⏸️ Simulación en pausa'));
@@ -1818,7 +1959,7 @@ if (ELEMENTOS.btnSintomas) {
         if (window.SCORING && window.SCORING.registerAction) { // Acceder a window.SCORING directamente
             const r = window.SCORING.registerAction('sintomas', 5);
             const msg = r ? '✅ Abrió Síntomas Actuales (+5)' : '✅ Síntomas Actuales ya abierto';
-            window.UI?.mostrarFeedback?.(msg); // Acceder a window.UI directamente
+            window.UI?.mostrarFeedback?.(msg); // Acceder to window.UI directamente
         }
     });
 }
@@ -1830,14 +1971,28 @@ if (ELEMENTOS.volverSintomas) {
         ELEMENTOS.sintomasPreguntas.style.display = 'none';
     });
 }
-
+// Función para colapsar el submenú de síntomas
+function colapsarSintomas() {
+  const sintomasPreguntas = document.getElementById('sintomasPreguntas');
+  if (sintomasPreguntas && sintomasPreguntas.style.display === 'block') {
+    sintomasPreguntas.style.display = 'none';
+    
+    // Restaurar visualización de todos los botones principales
+    const gridInterrogatorioButtons = document.querySelectorAll('#gridInterrogatorio > .accion-btn');
+    gridInterrogatorioButtons.forEach(btn => {
+      btn.style.display = 'flex';
+    });
+  }
+}
 // Manejadores para preguntas específicas
 const PREGUNTAS_SINTOMAS = {
     como_se_siente: {
         text: "Senti que me iba a desmayar, se me nublo la vista, ya empiezo a sentirme mejor",
+        audio: "audio/comosesiente3.mp3"
     },
     que_sucedio: {
         text: "Estaba en el gimnasio en la caminadora, cuando de repente se me nublo la vista y me caí",
+        audio: "audio/lipotimiaanamaria.mp3"
     }
 };
 
@@ -1845,7 +2000,14 @@ document.querySelectorAll('#sintomasPreguntas .accion-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const accionData = PREGUNTAS_SINTOMAS[this.dataset.accion];
         if (accionData && window.UI?.mostrarDialogo) { // Acceder a window.UI directamente
-            window.UI.mostrarDialogo(accionData.text, false);
+            window.UI.mostrarDialogo(accionData.text, true, accionData.audio);
+        }
+        
+        // Registrar la acción en el sistema de puntuación
+        if (window.SCORING && window.SCORING.registerAction) {
+            const r = window.SCORING.registerAction(this.dataset.accion, 2);
+            if (r) mostrarFeedback(`✅ Pregunta realizada (+2)`);
+            else mostrarFeedback(`✅ Pregunta ya realizada`);
         }
     });
 });
@@ -1859,8 +2021,10 @@ const ELEMENTOS_ANTECEDENTES = {
 
 // Diccionario de preguntas/respuestas
 const PREGUNTAS_ANTECEDENTES = {
-    tiene_diabetes: { text: "No tengo diabetes, tampoco presión alta, soy muy sana hasta hoy" }, 
-    tiene_alergias: { text: "No" }
+    tiene_diabetes: { text: "No tengo diabetes, tampoco presión alta, soy muy sana hasta hoy" ,
+    audio: "audio/nodiabetesanamaria.mp3"}, 
+    tiene_alergias: { text: "No",
+    audio: "audio/no.mp3"}
 };
 
 // Mostrar submenú de Antecedentes
@@ -1903,7 +2067,7 @@ document.querySelectorAll('#antecedentesPreguntas .accion-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const accionData = PREGUNTAS_ANTECEDENTES[this.dataset.accion];
         if (accionData && window.UI?.mostrarDialogo) { // Acceder a window.UI directamente
-            window.UI.mostrarDialogo(accionData.text, false);
+            window.UI.mostrarDialogo(accionData.text, true, accionData.audio);
         }
         // Note: The previous logic was registering 'sintomas' for antecedentes questions.
         // If this is intentional for scoring purposes, keep it. Otherwise, adjust.

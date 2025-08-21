@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MedSim — Simulación Almendra Vidriales</title>
+<style>
+/* Estilos existentes (mantenidos) */ 
+:root{--primary:#2563eb;--dark:#1e293b;--muted:#94a3b8;--white:#ffffff;--danger:#ef4444;--success:#10b981}
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",Tahoma, Geneva, Verdana, sans-serif}
+body{background:#0c1a2d;color:var(--white);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:16px}
+.sim-header{display:flex;justify-content:space-between;align-items:center;padding:.8rem 1.5rem;background:rgba(30,41,59,.95);border-bottom:1px solid #334155;height:70px;z-index:20}
+.logo{font-weight:700; color: white;font-size:1.4rem}
+.tiempo-restante {
+    background: rgba(15,23,42,.7);
+    padding: .45rem 1rem;
+    border-radius: 18px;
+    border: 1px solid #334155;
+    font-weight: 600;
+    color: #fff;
+}
+.tiempo-restante.critico { /* Nuevo estilo para tiempo crítico */
+    background: rgba(239,68,68,.3);
+    border-color: var(--danger);
+    animation: pulse 1s infinite;
+}
+.controles-superiores{display:flex;gap:1rem}
+.control-btn{background:rgba(15,23,42,.7);color:#cbd5e1;border:1px solid #334155;padding:.45rem .9rem;border-radius:6px;cursor:pointer}
+.sim-container{display:grid;grid-template-columns:300px 1fr 308px;gap:1rem;padding:1rem;flex-grow:1;height:calc(100vh - 70px)}
+
+/* Panel izquierdo */
+.panel-acciones{background:rgba(15,23,42,.7);border-radius:12px;border:1px solid #334155;display:flex;flex-direction:column;padding:0.2rem;overflow:hidden}
+.acciones-header{padding:1rem;border-bottom:1px solid #334155;  color: #fff;}
+.categorias-acciones{padding:1rem;display:flex;flex-direction:column;gap:.6rem;overflow:auto}
+.categoria-btn{display:flex;align-items:center;gap:.8rem;padding:.9rem;border-radius:8px;background:rgba(30,41,59,.7);border:1px solid #334155;cursor:pointer;font-weight:600;color:#e2e8f0}
+.acciones-container{display:none;background:rgba(15,23,42,.45);padding:1rem;border-radius:8px;border:1px solid #334155;margin-top:.5rem}
+.acciones-container.visible{display:block}
+.acciones-grid{display:grid;gap:.6rem}
+.accion-btn{display:flex;align-items:center;gap:.8rem;padding:.75rem;border-radius:8px;background:rgba(30,41,59,.7);border:1px solid #334155;cursor:pointer;font-weight:700;color:#e2e8f0}
+.volver-btn{margin-top:.8rem;padding:.7rem;border-radius:8px;background:rgba(59,130,246,.15);border:1px solid #334155;cursor:pointer}
+
+/* Centro */
+.panel-central {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.visualizacion-medica {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15,23,42,.5);
+  min-height: 0;
+}
+.visualizacion-medica img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+@media (orientation:landscape){ .visualizacion-medica img{ max-width:98%; max-height:96%; } }
+
+/* floating exploración */
+.floating-exploracion{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:360px;background:rgba(15,23,42,0.96);border-radius:10px;border:1px solid #334155;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,0.45);z-index:220;backdrop-filter:blur(6px)}
+.floating-exploracion.visible{display:block;animation:popIn .12s ease-out}
+.floating-exploracion .cerrar{position:absolute;top:8px;right:8px;background:transparent;border:none;color:#ffffff;cursor:pointer;font-size:1.05rem}
+.floating-exploracion h3{margin-bottom:8px;color:#ffffff;font-size:1.15rem}
+.floating-exploracion .opcion{width:100%;padding:12px;margin:8px 0;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);cursor:pointer;text-align:left;font-weight:700;transition:all .15s;color:#ffffff;font-size:1.05rem}
+.floating-exploracion .opcion:hover{transform:translateY(-3px);background:rgba(37,99,235,0.15);border-color:var(--primary)}
+.floating-exploracion .opcion.selected{background:rgba(37,99,235,0.25);border-color:var(--primary);color:#fff;box-shadow:0 6px 18px rgba(37,99,235,0.08)}
+
+/* Derecho */
+.panel-monitoreo{background:rgba(15,23,42,.7);border-radius:12px;border:1px solid #334155;display:flex;flex-direction:column;overflow:hidden; font-size: 92%;max-height: calc(100vh - 70px - 2rem);
+  overflow-y: auto;}
+.monitoreo-header{padding:1rem;border-bottom:1px solid #334155}
+.monitoreo-header h2{color: #fff; font-size : 1.06rem; font-weight: 700; }
+.monitoreo-content{padding:1rem;overflow:auto;flex:1}
+.monitoreo-content,
+.monitoreo-content h3,
+.monitoreo-content > div:first-child > div > {
+    padding: 0.3rem 0.5rem; font-size:0.9rem;
+    color: #fff !important;
+}
+
+/* signos */
+.signos-vitales{display:grid;grid-template-columns:repeat(1,1fr);gap:1rem;margin-bottom:1rem}
+@media(min-width:900px){ .signos-vitales{ grid-template-columns:1fr 1fr; } }
+
+.vital-card{aspect-ratio:1; min-height: auto !important; height: 110px; display: flex; flex-direction: column; justify-content: space-between; position:relative;background:rgba(30,41,59,.5);border-radius:10px;padding:8px;border:1px solid #334155;transition:all .2s;color:var(--white);}
+.vital-card.critico{border-color:var(--danger);box-shadow:0 6px 18px rgba(239,68,68,0.06)}
+.vital-card.off{background:rgba(255,255,255,0.03);color:var(--muted);opacity:.85}
+.vital-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.vital-nombre{font-size:0.95rem;color:#cbd5e1}
+.vital-valor{font-size:1.8rem;font-weight:800;line-height:1;margin: 2px 0;color:var(--white)}
+.vital-unit{font-size:0.84rem;color:#cbd5e1;margin-left:4px;font-weight:700}
+.vital-subtext{font-size:0.84rem;color:#cbd5e1;margin-top:4px}
+
+/* power */
+.power-btn{position:absolute;top:8px;right:8px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px}
+.power-btn.off{opacity:0.65;color:var(--muted);border-color:rgba(148,163,184,0.08)}
+.power-btn.on{background:linear-gradient(90deg,var(--primary),#3b82f6);color:#fff;border-color:transparent}
+
+/* reporte química sanguínea */
+.reporte-quimica{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:250;width:360px;max-width:calc(100% - 40px);background:rgba(12,18,29,0.98);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,0.6);color:#fff;backdrop-filter:blur(6px)}
+.reporte-quimica.visible{display:block}
+.reporte-quimica .cerrar-reporte{position:absolute;top:8px;right:8px;background:transparent;border:none;color:#fff;font-size:1.05rem;cursor:pointer}
+.reporte-quimica h4{margin-bottom:10px;color:var(--primary);font-size:1.05rem}
+.reporte-quimica table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.reporte-quimica th { background-color: var(--primary); padding: 8px 10px; text-align: left; font-weight: 600; }
+.reporte-quimica td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.reporte-quimica tr:nth-child(even) { background-color: rgba(255,255,255,0.05); }
+
+/* puntuación */
+.puntuacion-container{background:rgba(16,185,129,0.06);padding:10px;border-radius:8px;border:1px solid #334155;margin-top:10px}
+
+/* feedback */
+.feedback-container{position:absolute;top:20px;left:20px;background:rgba(30,41,59,.95);padding:.7rem 1rem;border-radius:8px;border-left:4px solid var(--success);display:none;z-index:80}
+.feedback-container.visible{display:block}
+
+/* dialogo (presentación / paciente) */
+.dialogo-container{position:absolute;bottom:20px;left:20px;right:20px;background:rgba(30,41,59,0.95);border-radius:12px;padding:1rem 1.2rem;border:1px solid var(--primary);display:none;z-index:300}
+.dialogo-container.visible{display:block;animation:fadeIn .25s}
+.dialogo-texto{color:#fff;font-size:1.05rem;line-height:1.4;min-height:64px}
+.dialogo-controls{display:flex;justify-content:space-between;align-items:center;margin-top:.6rem}
+.dialogo-btn{background:var(--primary);color:#fff;border:none;padding:.5rem .9rem;border-radius:6px;cursor:pointer}
+
+
+.img-paciente {
+  width: max-content;
+  height: auto;
+  max-width: 100%;
+  max-height: 99%;
+  display: block;
+  margin: 0 auto;
+  border-radius: 16px;
+  object-fit: fill;
+}
+/* *** PACIENTE Estilos para el modal de imagen flotante *** */
+.modal-imagen-flotante {
+    display: none; /* Oculto por defecto */
+    position: fixed; /* Ocupa toda la pantalla para el fondo oscuro */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(12, 26, 45, 0.8);
+    z-index: 500;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px); 
+}
+
+.modal-imagen-flotante.visible {
+    display: flex; /* Visible cuando tiene la clase */
+    animation: fadeIn .2s ease-out;
+}
+
+.modal-imagen-flotante .modal-contenido {
+    position: relative;
+    background: rgba(30, 41, 59, 0.98);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    text-align: center;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+.modal-imagen-flotante .cerrar-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-imagen-flotante h3 {
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.modal-imagen-flotante img {
+    max-width: 100%;
+    max-height: calc(90vh - 100px); /* Ajustar para que quepa el título y padding */
+    border-radius: 8px;
+}
+
+/* Nuevos estilos para tiempo crítico */
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* anim */
+@keyframes popIn{from{transform:translate(-50%,-46%) scale(.98);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Canvas para trazo de registro sonoro */
+.audio-trace-canvas {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-top: 10px;
+    display: block; /* Oculto por defecto */
+    width: 100%; /* Ajusta el ancho al contenedor */
+    max-width: 100%;
+    height: 60px; /* Altura fija para el trazo */
+}
+
+/* Nuevo estilo para el canvas del ECG */
+.ecg-canvas-container {
+    margin-top: 15px;
+    position: relative;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.5);
+    overflow: hidden;
+    height: 150px;
+}
+
+.ecg-canvas-container h4 {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin: 0;
+    z-index: 1;
+}
+
+#ecgCanvas {
+    width: 100%;
+    height: 100%;
+    background: #0c1a2d;
+    display: block;
+}
+
+/* Indicador de frecuencia cardíaca */
+.heart-rate-indicator {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 0.8rem;
+    color: #ef4444;
+    z-index: 1;
+    background: rgba(30, 41, 59, 0.7);
+    padding: 3px 6px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+}
+
+.heart-rate-indicator::before {
+    content: "♥";
+    margin-right: 5px;
+    color: #ef4444;
+    animation: heartbeat 1s infinite;
+}
+
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Estilos para el modal de soluciones IV */
+.lista-soluciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.opcion-solucion {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: rgba(30,41,59,.7);
+  border: 1px solid #334155;
+  cursor: pointer;
+  color: #e2e8f0;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.opcion-solucion:hover {
+  background: rgba(37,99,235,0.15);
+  border-color: var(--primary);
+}
+
+/* Estilos para el modal de ANTIARRITMICOS IV */
+.lista-antiarritmicos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.opcion-antiarritmico {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: rgba(30,41,59,.7);
+  border: 1px solid #334155;
+  cursor: pointer;
+  color: #e2e8f0;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.opcion-antiarritmico:hover {
+  background: rgba(37,99,235,0.15);
+  border-color: var(--primary);
+}
+
+</style>
+</head>
+<body>
+<header class="sim-header">
+  <div class="logo">MedSim</div>
+  <div class="tiempo-restante" id="tiempoContainer">⏱️ <span id="tiempo">18:00</span></div>
+  <div class="controles-superiores">
+    <button class="control-btn" id="pausaBtn">⏸️ Pausa</button>
+    <button class="control-btn" id="volverBtn">🏠 Salir</button>
+  </div>
+</header>
+
+<div class="sim-container">
+  <!-- IZQUIERDA -->
+  <aside class="panel-acciones">
+    <div class="acciones-header"><h3>Acciones Médicas</h3></div>
+    <div class="categorias-acciones">
+      <button class="categoria-btn" data-categoria="interrogatorio" id="btnInterrogatorio">🗣️ Interrogatorio</button>
+      <div class="acciones-container visible" id="interrogatorioAcciones">
+        <div class="acciones-grid" id="gridInterrogatorio">
+              <!-- Botones del submenú INTERROGATORIO aquí -->
+          <button class="accion-btn" data-accion="presentacion" id="btnPresentacion">
+            <div class="accion-icono">👋</div>Presentación
+          </button>
+
+          <button class="accion-btn" data-accion="sintomas" id="btnSintomas">
+            <div class="accion-icono">🤒</div>Síntomas Actuales
+          </button>
+          <div id="sintomasPreguntas" style="display: none;">
+            <button class="accion-btn" data-accion="como_se_siente">
+                <div class="accion-icono">❓</div>¿Cómo se siente?
+            </button>
+            <button class="accion-btn" data-accion="que_sucedio">
+                <div class="accion-icono">❓</div>¿Qué fue lo que le sucedió?
+            </button>
+            <button class="volver-btn" id="volverSintomas">Volver</button>
+            </div>
+
+          <button class="accion-btn" data-accion="antecedentes" id="btnAntecedentes">
+            <div class="accion-icono">🔄</div>Antecedentes Médicos
+          </button>
+          <div id="antecedentesPreguntas" style="display: none;">
+            <button class="accion-btn" data-accion="tiene_diabetes">
+                <div class="accion-icono">❓</div>¿Tiene usted Diabetes?
+            </button>
+            <button class="accion-btn" data-accion="tiene_alergias">
+                <div class="accion-icono">❓</div>¿Alergias?
+            </button>
+            <button class="volver-btn" id="volverAntecedentes">Volver</button>
+            </div>
+        </div>
+      </div>
+
+      <button class="categoria-btn" data-categoria="exploracion">👁️ Exploración Física</button>
+      <div class="acciones-container" id="exploracionAcciones">
+       </div>
+      <button class="categoria-btn" data-categoria="estudios">🔬 Estudios</button>
+      <div class="acciones-container" id="estudiosAcciones">
+        <div class="acciones-grid">
+          <button class="accion-btn" data-accion="glucemia_capilar" id="btnGlucemia">
+            🩸 Glucemia Capilar
+          </button>
+          <button class="accion-btn" data-accion="quimica_sanguinea" id="btnQuimica">🧪 Química Sanguínea</button>
+          <button class="accion-btn" data-accion="ecg">📈 Electrocardiograma</button>
+        </div>
+      </div>
+
+      <!-- BOTÓN DE PROCEDIMIENTOS -->
+      <button class="categoria-btn" data-categoria="procedimientos">⚕️ Procedimientos</button>
+      <div class="acciones-container" id="procedimientosAcciones">
+        <div class="acciones-grid">
+          <button class="accion-btn" data-accion="intubacion">🫁 Intubación Endotraqueal</button>
+          <button class="accion-btn" data-accion="acceso_venoso_periferico">Acceso Venoso Periférico</button>
+          <button class="accion-btn" data-accion="toracocentesis">🩸 Toracocentesis</button>
+          <button class="accion-btn" data-accion="reanimacion_cpr">❤️‍🩹 Reanimación Cardiopulmonar</button>
+        </div>
+      </div>
+
+      <button class="categoria-btn" data-categoria="tratamiento">💊 Tratamiento</button>
+      <div class="acciones-container" id="tratamientoAcciones">
+        <div class="acciones-grid">
+          <button class="accion-btn" data-accion="soluciones_iv">💧 Soluciones IV</button>
+          <button class="accion-btn" data-accion="glucagon">💊 Glucagón IM</button>
+          <button class="accion-btn" data-accion="oxigeno">🌬️ Oxígeno</button>
+          <button class="accion-btn" data-accion="antiarritmicos">💉 Antiarritmicos</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CENTRO -->
+  <main class="panel-central">
+    <div class="visualizacion-medica">
+      <img src="imagenes/mujer34años.png" alt="Paciente Violeta Parra" class="img-paciente">
+
+      <!-- Menú flotante de Exploración -->
+      <div id="menuExploracionFlotante" class="floating-exploracion" aria-hidden="true">
+        <button class="cerrar" id="cerrarMenuExpl" aria-label="Cerrar menú">✕</button>
+        <h3>Exploración Física</h3>
+        <button class="opcion" data-accion="via_aerea">Vía aérea</button>
+        <button class="opcion" data-accion="ventilacion">Ventilación</button>
+        <button class="opcion" data-accion="circulacion">Circulación</button>
+        <button class="opcion" data-accion="neurologica_expl">Neurológico</button>
+      </div>
+      <!-- En la sección de visualización médica (panel central) -->
+      <!-- Agregar este nuevo modal después del modal de exploración -->
+      <div id="modalECG" class="modal-imagen-flotante" aria-hidden="true">
+        <div class="modal-contenido">
+          <button class="cerrar-modal" id="cerrarModalECG" aria-label="Cerrar imagen">✕</button>
+          <h3>Electrocardiograma (ECG)</h3>
+          <img src="imagenes/BAV2oGdoMbtzI.jpg" alt="ECG mostrando Bloqueo AV.">
+        </div>
+      </div>
+
+       <!-- ***Modal para imagen de exploración *** -->
+      <div id="modalImagenExploracion" class="modal-imagen-flotante" aria-hidden="true">
+          <div class="modal-contenido">
+              <button class="cerrar-modal" id="cerrarModalImagen" aria-label="Cerrar imagen">✕</button>
+              <h3 id="modalImagenTitulo"></h3>
+              <img id="imagenExploracionDetalle" src="" alt="Detalle de la exploración">
+          </div>
+      </div>
+
+      <!-- Modal para Soluciones IV -->
+      <div id="modalSolucionesIV" class="modal-imagen-flotante" aria-hidden="true">
+        <div class="modal-contenido">
+          <button class="cerrar-modal" id="cerrarModalSolucionesIV" aria-label="Cerrar modal">✕</button>
+          <h3>Seleccione una Solución IV</h3>
+          <div class="lista-soluciones">
+            <button class="opcion-solucion" data-solucion="Solucion Salina 0.9%">Solución Salina 0.9%</button>
+            <button class="opcion-solucion" data-solucion="Solucion Glucosada 5%">Solución Glucosada 5%</button>
+            <button class="opcion-solucion" data-solucion="Solucion Ringer Lactato">Solución Ringer Lactato</button>
+            <button class="opcion-solucion" data-solucion="Solucion Glucosada 10%">Solución Glucosada 10%</button>
+            <button class="opcion-solucion" data-solucion="Solucion Salina Hipertonica 3%">Solución Salina Hipertónica 3%</button>
+            <button class="opcion-solucion" data-solucion="Solucion Glucosada 50%">Solución Glucosada 50%</button>
+            <button class="opcion-solucion" data-solucion="Hidroxietil Almidon">Hidroxietil Almidón</button>
+            <button class="opcion-solucion" data-solucion="Gelatina">Gelatina</button>
+            <button class="opcion-solucion" data-solucion="Albúmina 5%">Albúmina 5%</button>
+            <button class="opcion-solucion" data-solucion="Albúmina 25%">Albúmina 25%</button>
+          </div>
+        </div>
+      </div>
+            <!-- Modal para ANTIARRITMICOS -->
+      <div id="modalAntiarritmicos" class="modal-imagen-flotante" aria-hidden="true">
+        <div class="modal-contenido">
+          <button class="cerrar-modal" id="cerrarModalAntiarritmicos" aria-label="Cerrar modal">✕</button>
+          <h3>Seleccione un Antiarritmico</h3>
+          <div class="lista-antiarritmicos">
+            <button class="opcion-antiarritmico" data-antiarritmico="Adenosina 6mg">Adenosina 6 mg</button>
+            <button class="opcion-antiarritmico" data-antiarritmico="Adenosina 12mg">Adenosina 12 mg</button>
+            <button class="opcion-antiarritmico" data-antiarritmico="Atropina">Atropina</button>
+            <button class="opcion-antiarritmico" data-antiarritmico="Amiodarona">Amiodarona</button>
+            <button class="opcion-antiarritmico" data-antiarritmico="Propafenona">Propafenona</button>
+            <button class="opcion-antiarritmico" data-antiarritmico="Lidocaina">Lidocaina</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reporte Química (flotante) -->
+      <div id="reporteQuimica" class="reporte-quimica" role="dialog" aria-modal="true" aria-hidden="true">
+        <button class="cerrar-reporte" id="cerrarReporte" aria-label="Cerrar reporte">✕</button>
+        <h4>Reporte - Química Sanguínea</h4>
+        <table>
+          <tr>
+            <th>ESTUDIO</th>
+            <th>RESULTADO</th>
+            <th>RANGO NORMAL</th>
+          </tr>
+          <tr>
+            <td>Glucosa</td>
+            <td>66 mg/dL</td>
+            <td>65 a 100</td>
+          </tr>
+          <tr>
+            <td>Sodio</td>
+            <td>138 mmol/L</td>
+            <td>135-145</td>
+          </tr>
+          <tr>
+            <td>Potasio</td>
+            <td>4.0 mmol/L</td>
+            <td>3.5-5.0</td>
+          </tr>
+          <tr>
+            <td>Calcio</td>
+            <td>8.9 mg/dL</td>
+            <td>8.5-10.5</td>
+          </tr>
+          <tr>
+            <td>Creatinina</td>
+            <td>0.7 mg/dL</td>
+            <td>0.6-1.2</td>
+          </tr>
+          <tr>
+            <td>BUN</td>
+            <td>18 mg/dL</td>
+            <td>7-20</td>
+          </tr>
+        </table>
+      </div>
+
+     
+      </div>
+      
+   
+
+  <!-- Diálogo (presentación / respuesta paciente) -->
+      <div class="dialogo-container" id="dialogoContainer" aria-hidden="true">
+        <div class="dialogo-texto" id="dialogoTexto"></div>
+        <div class="dialogo-controls">
+          <div id="audioIndicator" style="color:#94a3b8;font-size:0.95rem;display:none;">🔈 Reproduciendo audio...</div>
+          <!-- Audio element for mp3 -->
+          <audio id="sintomasAudio" src="audio/comosesiente3.mp3" preload="auto"></audio>
+          <!-- Audio element for respiracionnormal.mp3 -->
+          <audio id="respiracionNormalAudio" src="audio/respiracionnormal.mp3" preload="auto"></audio>
+          <!-- Audio element for ritmocardiaco.mp3 -->
+          <audio id="ritmoCardiacoAudio" src="audio/ritmocardiaco.mp3" preload="auto"></audio>
+          <!-- Audio element for precentacionpte.mp3 -->
+          <audio id="presentacionAudio" src="audio/holadoctoranamaria.mp3" preload="auto"></audio>
+          <audio id="quesucedioAudio" src="audio/lipotimiaanamaria.mp3" preload="auto"></audio>
+          <audio id="diabetesAudio" src="audio/nodiabetesanamaria.mp3" preload="auto"></audio>
+          <audio id="alergiasAudio" src="audio/no.mp3" preload="auto"></audio> 
+          <audio id="nohayaccesoAudio" src="audio/nohayacceso.mp3" preload="auto"></audio>
+          <button class="dialogo-btn" id="cerrarDialogo">Cerrar</button>
+        </div>
+      </div>
+  </main>
+  <!-- DERECHO -->
+  <aside class="panel-monitoreo" aria-label="Monitoreo y diagnóstico">
+    <div class="monitoreo-header"><h2>Información del Paciente</h2></div>
+    <div class="monitoreo-content">
+      <div style="margin-bottom:12px">
+        <h3 style="margin-bottom:6px">Violeta Parra</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="background:rgba(255,255,255,0.03);padding:.4rem .6rem;border-radius:6px;border:1px solid rgba(255,255,255,0.03);font-weight:500">34 Años</div>
+          <div style="background:rgba(255,255,255,0.03);padding:.4rem .6rem;border-radius:6px;border:1px solid rgba(255,255,255,0.03);font-weight:500">69.0 kg</div>
+          <div style="background:rgba(255,255,255,0.03);padding:.4rem .6rem;border-radius:6px;border:1px solid rgba(255,255,255,0.03);font-weight:500">166 cm</div>
+        </div>
+      </div>
+
+      <div class="signos-vitales">
+        <!-- Glucemia -->
+        <div class="vital-card off" id="glucemiaCard" data-value="63" data-unit="mg/dL" aria-live="polite">
+          <div class="vital-header">
+            <div class="vital-nombre">Glucosa</div>
+            <button class="power-btn off" data-target="glucemiaCard" aria-pressed="false" title="Encender/Apagar monitor glucosa">⏻</button>
+          </div>
+          <div class="vital-valor" id="glucemiaValor">—</div>
+          <div class="vital-subtext" id="glucemiaUnit">—</div>
+        </div>
+
+        <!-- FC -->
+        <div class="vital-card off" id="fcCard" data-value="42" data-unit="lpm">
+          <div class="vital-header">
+            <div class="vital-nombre">FC</div>
+            <button class="power-btn off" data-target="fcCard" aria-pressed="false" title="Encender/Apagar monitor frecuencia cardiaca">⏻</button>
+          </div>
+          <div class="vital-valor" id="fcValor">—</div>
+          <div class="vital-subtext" id="fcUnit">—</div>
+        </div>
+
+        <!-- PA -->
+        <div class="vital-card off" id="paCard" data-value="105/70" data-unit="mmHg">
+          <div class="vital-header">
+            <div class="vital-nombre">PA</div>
+            <button class="power-btn off" data-target="paCard" aria-pressed="false" title="Encender/Apagar monitor presión arterial">⏻</button>
+          </div>
+          <div class="vital-valor" id="paValor">—</div>
+          <div class="vital-subtext" id="paUnit">—</div>
+        </div>
+
+        <!-- SatO2 + FR -->
+        <div class="vital-card off" id="satCard" data-value="98" data-unit="%" data-rr="20">
+          <div class="vital-header">
+            <div class="vital-nombre">SatO₂</div>
+            <button class="power-btn off" data-target="satCard" aria-pressed="false" title="Encender/Apagar monitor saturación">⏻</button>
+          </div>
+          <div class="vital-valor" id="satValor">—</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <div class="vital-subtext" id="satUnit">—</div>
+          </div>
+          <div class="vital-subtext" id="rrText">FR: — rpm</div>
+        </div>
+      </div>
+
+      <!-- Canvas para el trazo de registro sonoro -->
+      <canvas id="audioTraceCanvas" class="audio-trace-canvas"></canvas>
+
+      <!-- Canvas para telemetría cardíaca -->
+      <div class="ecg-canvas-container">
+        <h4>ECG - Derivación II</h4>
+        <canvas id="ecgCanvas"></canvas>
+        <div class="heart-rate-indicator" id="heartRateIndicator">42 lpm</div>
+      </div>
+      </div>
+
+      
+      <div class="puntuacion-container">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700;color:var(--success)">⭐ Puntuación</div>
+          <div id="puntuacionValor" style="font-weight:800">0</div>
+        </div>
+        <div style="margin-top:8px;color:var(--muted);font-size:0.9rem">IMPORTANTE: debes hacer <strong>Presentación</strong> y abrir <strong>Síntomas Actuales</strong> para poder alcanzar 100 puntos.</div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- Feedback -->
+<div class="feedback-container" id="feedbackContainer" role="status" aria-live="polite"></div>
+<script>
+// ====== MÓDULO: ECG MEJORADO ======
+(function(window) {
+  const ecgCanvas = document.getElementById('ecgCanvas');
+  const ctx = ecgCanvas.getContext('2d');
+  const heartRateIndicator = document.getElementById('heartRateIndicator');
+  
+  // Variables de estado
+  let heartRate = 42;
+  let offset = 0;
+  let lastTimestamp = 0;
+  let animationFrameId = null;
+  let canvasWidth = 0;
+  let canvasHeight = 0;
+
+  // Inicializar canvas
+  function initCanvas() {
+    ecgCanvas.width = ecgCanvas.offsetWidth;
+    ecgCanvas.height = ecgCanvas.offsetHeight;
+    canvasWidth = ecgCanvas.width;
+    canvasHeight = ecgCanvas.height;
+  }
+  
+  // Función para generar formas de onda más realistas
+  function getWaveformY(phase) {
+    // Onda P (suave y redondeada)
+    if (phase >= 0.0 && phase < 0.07) {
+      const pPhase = (phase - 0.0) / 0.09;
+      return -0.18 * Math.sin(pPhase * Math.PI);
+    }
+    // Segmento PR (línea isoeléctrica)
+    else if (phase >= 0.15 && phase < 0.18) {
+      return 0; // Línea base antes de QRS
+    }
+    // Complejo QRS (puntiagudo)
+    else if (phase >= 0.18 && phase < 0.25) {
+      const qrsPhase = (phase - 0.18) / 0.07; // 7% del ciclo
+      
+      // Onda R - puntiaguda y positiva
+      if (qrsPhase < 0.4) {
+        return -0.95 * (qrsPhase / 0.5); // Subida rápida
+      }
+      // Onda S - puntiaguda y negativa (misma amplitud que P)
+      else if (qrsPhase < 0.8) {
+        return -0.66 + 0.66 * ((qrsPhase - 0.4) / 0.44); // Bajada rápida
+      }
+      // Retorno a línea base
+      else {
+        return 0 + 0.2 * ((qrsPhase - 0.8) / 0.2); // Recuperación
+      }
+    }
+    // Segmento ST (línea isoeléctrica)
+    else if (phase >= 0.25 && phase < 0.4) {
+      return 0;
+    }
+    // Onda T (suave, 70% más grande que P)
+    else if (phase >= 0.16 && phase < 0.56) {
+      const tPhase = (phase - 0.38) / 0.2;
+      return -0.21 * Math.sin(tPhase * Math.PI);
+    }
+    // Línea base
+    return 0;
+  }
+
+  // Función para dibujar el ECG mejorado
+  function drawECG(timestamp) {
+    if (!lastTimestamp) lastTimestamp = timestamp;
+    const elapsed = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
+    
+    // Ajustar velocidad según FC
+    const speed = 0.2 * (60 / heartRate);
+    offset = (offset + speed) % canvasWidth;
+    
+    // Limpiar canvas
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    
+    // Dibujar rejilla
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    
+    // Líneas verticales
+    for (let x = 0; x < canvasWidth; x += 25) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvasHeight);
+      ctx.stroke();
+    }
+    
+    // Líneas horizontales
+    for (let y = 0; y < canvasHeight; y += 25) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvasWidth, y);
+      ctx.stroke();
+    }
+    
+    // Dibujar trazado ECG
+    ctx.beginPath();
+    ctx.strokeStyle = '#00ff8c';
+    ctx.lineWidth = 1.5;
+    
+    const centerY = canvasHeight / 2;
+    const amplitude = canvasHeight * 0.3;
+    const pixelsPerSecond = 100; // Ajusta según la velocidad deseada
+    const secondsPerBeat = 60 / heartRate;
+    const cycleLength = secondsPerBeat * pixelsPerSecond;
+    
+    for (let x = 0; x < canvasWidth; x++) {
+      const globalPos = (x + offset);
+      const phase = (globalPos % cycleLength) / cycleLength;
+      
+      const waveY = getWaveformY(phase);
+      const yValue = centerY + waveY * amplitude;
+      
+      if (x === 0) {
+        ctx.moveTo(x, yValue);
+      } else {
+        ctx.lineTo(x, yValue);
+      }
+    }
+    
+    ctx.stroke();
+    
+    animationFrameId = requestAnimationFrame(drawECG);
+  }
+  
+  // Iniciar animación
+  function startECG() {
+    if (!animationFrameId) {
+      initCanvas();
+      animationFrameId = requestAnimationFrame(drawECG);
+    }
+  }
+  
+  // Detener animación
+  function stopECG() {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+  }
+  
+  // Actualizar frecuencia cardíaca
+  function updateHeartRate(newRate) {
+    heartRate = newRate;
+    heartRateIndicator.textContent = heartRate + ' lpm';
+    
+    // Cambiar color según FC
+    if (heartRate < 50) {
+      heartRateIndicator.style.color = '#ef4444';
+    } else if (heartRate < 60) {
+      heartRateIndicator.style.color = '#ffdd57';
+    } else {
+      heartRateIndicator.style.color = '#10b981';
+    }
+  }
+  
+  // Aumentar gradualmente la FC
+  function increaseHeartRate() {
+    let currentRate = heartRate;
+    const targetRate = 66;
+    const interval = 400; // ms entre aumentos
+    
+    const intervalId = setInterval(() => {
+      currentRate += 1;
+      updateHeartRate(currentRate);
+      
+      // Actualizar tarjeta de FC
+      document.getElementById('fcValor').textContent = currentRate;
+      document.getElementById('fcCard').dataset.value = currentRate;
+      
+      if (currentRate >= targetRate) {
+        clearInterval(intervalId);
+      }
+    }, interval);
+  }
+  
+  // Iniciar automáticamente al cargar
+  window.addEventListener('load', () => {
+    initCanvas();
+    startECG();
+    updateHeartRate(42);
+  });
+  
+  // Manejar redimensionamiento
+  window.addEventListener('resize', () => {
+    initCanvas();
+  });
+  
+  // Exponer API
+  window.ECG = {
+    start: startECG,
+    stop: stopECG,
+    updateHeartRate: updateHeartRate,
+    increaseHeartRate: increaseHeartRate
+  };
+})(window);
+
+// ====== MÓDULO: INTERACCIÓN ======
+(function(window) {
+  // Mostrar feedback
+  function mostrarFeedback(msg, esError = false) {
+    const fb = document.getElementById('feedbackContainer');
+    if (!fb) return;
+    
+    fb.textContent = msg;
+    fb.style.borderLeftColor = esError ? 'var(--danger)' : 'var(--success)';
+    fb.classList.add('visible');
+    
+    clearTimeout(fb._t);
+    fb._t = setTimeout(() => fb.classList.remove('visible'), 3000);
+  }
+  
+  // Manejar botones de acción
+  document.querySelectorAll('.accion-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const accion = btn.getAttribute('data-accion');
+      if (accion === 'atropina') {
+        window.ECG.increaseHeartRate();
+        mostrarFeedback('💉 Atropina administrada. Frecuencia cardíaca aumentando...');
+      } else if (accion === 'ecg') {
+        mostrarFeedback('📈 ECG realizado correctamente');
+      } else {
+        mostrarFeedback(`Acción: ${accion}`);
+      }
+    });
+  });
+  
+  // Manejar botones de categoría
+  document.querySelectorAll('.categoria-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const categoria = btn.getAttribute('data-categoria');
+      const contenedorId = `${categoria}Acciones`;
+      
+      // Ocultar todos los contenedores
+      document.querySelectorAll('.acciones-container').forEach(c => {
+        c.classList.remove('visible');
+      });
+      
+      // Mostrar contenedor actual
+      const contenedor = document.getElementById(contenedorId);
+      if (contenedor) {
+        contenedor.classList.add('visible');
+      }
+    });
+  });
+  
+  // Exponer API
+  window.UI = {
+    mostrarFeedback: mostrarFeedback
+  };
+})(window);
+
+//<!-- ====== MÓDULO: SCORING (lógica aislada) ====== -->
+
+/**
+  * - Mantiene puntuación y registro de acciones.
+ * - Exporta funciones para registrar acciones y consultar prerequisitos.
+ */
+(function(window){
+  const PUNT_MAX = 100;
+  let puntuacion = 0;
+  const acciones = new Set();
+  
+  // Pasos obligatorios para poder alcanzar 100
+  const pasosRequeridosParaMax = new Set(['correcto_presentacion','sintomas']);
+
+  // Acciones fundamentales requeridas para éxito
+  const accionesFundamentales = new Set([
+  'correcto_presentacion',
+  'ECG',
+  'acceso_venoso_periferico',
+  'atropina'  // Solo atropina es fundamental para bradicardia
+]);
+  // Agregar constante para la acción neurológica
+  const ACCION_NEUROLOGICA = 'exploracion_neurologica';
+
+  function realizarAccion(accion) {
+    switch(accion) {
+    
+      
+      case 'solucionsalina': {
+        // Sin efecto en puntuación
+        window.UI.mostrarFeedback('💧 Soluciones cristaloides administrándose. (sin efecto en puntuación)');
+        break;
+      }
+
+            
+      function redirigirAExito() {
+    // Verificar si se realizó la acción neurológica
+    if (!acciones.has(ACCION_NEUROLOGICA)) {
+      addPoints(-8); // Descontar 8 puntos si no se realizó
+      mostrarFeedback('⚠️ No se realizó exploración neurológica (-8 puntos)');
+    }
+     
+  }
+      
+    }
+  }
+  
+
+  function hasAction(name) { 
+    return acciones.has(name); 
+  }
+
+  function canReachMax() {
+    for (const req of pasosRequeridosParaMax) {
+      if (!acciones.has(req)) return false;
+    }
+    return true;
+  }
+
+  function clamp() {
+    if (puntuacion < 0) puntuacion = 0;
+    if (puntuacion > PUNT_MAX) {
+      puntuacion = canReachMax() ? PUNT_MAX : PUNT_MAX - 1;
+    }
+  }
+
+  function _updateUI() {
+    const el = document.getElementById('puntuacionValor');
+    if (el) el.textContent = puntuacion;
+  }
+
+  function registerAction(actionName, points = 0) {
+    if (!acciones.has(actionName)) {
+      acciones.add(actionName);
+      puntuacion += points;
+      clamp();
+      _updateUI();
+      return true;
+    }
+    return false;
+  }
+
+  function addPoints(n) {
+    puntuacion += n;
+    clamp();
+    _updateUI();
+  }
+
+  function verificarAccionesFundamentales() {
+    for (const accion of accionesFundamentales) {
+      if (!acciones.has(accion)) return false;
+    }
+    return true;
+  }
+
+  function redirigirAExito() {
+    const puntuacion = window.SCORING.getScore();
+    localStorage.setItem('puntuacionFinal', puntuacion);
+    localStorage.setItem('motivoFin', 'exito');
+    localStorage.setItem('tipoSimulacion', 'bradicardia');
+    window.location.href = 'fin_simulacion.html';
+  }
+
+  // *** Función para realizar acciones y puntuar ***
+  function realizarAccion(accion) {
+    switch(accion) {
+      
+      case 'presentacion':
+        const mensaje = `Hola doctor, encantada de conocerlo`;
+        if (window.UI && window.UI.mostrarDialogo) {
+          window.UI.mostrarDialogo(mensaje, true, 'audio/holadoctoranamaria.mp3');
+        }
+
+        if (!acciones.has('correcto_presentacion')) {
+          registerAction('correcto_presentacion', 5);
+          if (window.UI && window.UI.mostrarFeedback) {
+            window.UI.mostrarFeedback('✅ Presentación realizada correctamente (+5)');
+          }
+        } else {
+          if (window.UI && window.UI.mostrarFeedback) {
+            window.UI.mostrarFeedback('✅ Presentación ya realizada');
+          }
+        }
+        break;
+
+      case 'glucemia_capilar':
+        window.UI.mostrarDialogo("Glucosa capilar 63 mg/dL", false);
+        const registered = registerAction('glucemia_capilar', 15);
+        if (registered) {
+          window.UI.mostrarFeedback('✅ Glucemia capilar realizada (+5)');
+        }
+        if (verificarAccionesFundamentales()) {
+          redirigirAExito();
+        }
+        break;
+
+        case 'intubacion': {
+    // Mostrar mensaje de advertencia
+    if (window.UI && window.UI.mostrarFeedback) {
+        window.UI.mostrarFeedback(
+            '⚠️ Maniobra innecesaria para este paciente que puede ser perjudicial', 
+            true
+        );
+    }
+    
+    // Restar 40 puntos
+    addPoints(-40);
+    
+    // Guardar motivo de finalización
+    localStorage.setItem('puntuacionFinal', puntuacion);
+    localStorage.setItem('motivoFin', 'intubacion_fallida');
+    
+    // Redirigir después de un breve retardo
+    setTimeout(() => {
+        window.location.href = 'fin_simulacion.html';
+    }, 1500);
+    break;
+}
+
+    case 'via_aerea':
+    case 'ventilacion':
+    case 'circulacion':
+      const actName = `correcto_${accion}`;
+      const r = registerAction(actName, 5);
+      if (r) {
+        window.UI.mostrarFeedback(`✅ ${accion.replace('_',' ')} realizado (+5)`);
+      } else {
+        window.UI.mostrarFeedback(`✅ ${accion.replace('_',' ')} ya realizado`);
+      }
+      break;
+
+    case 'neurologica':
+      const registeredNeuro = registerAction(ACCION_NEUROLOGICA, 0);
+      if (registeredNeuro) {
+        window.UI.mostrarFeedback('✅ Exploración neurológica realizada');
+      }
+      
+      window.UI.mostrarImagenModal(
+        'Exploración Neurológica', 
+        'imagenes/ECG14.jpg',
+        'ECG neurológico'
+      );
+      break;
+
+    default:
+      window.UI.mostrarFeedback(`Acción '${accion}' no configurada`);
+      break;
+    
+case 'ecg': {
+    const registered = registerAction('ECG', 15); // +15 puntos
+    if (registered) {
+        window.UI.mostrarFeedback('📈 ECG realizado correctamente (+15)');
+    } else {
+        window.UI.mostrarFeedback('📈 ECG ya fue realizado');
+    }
+    
+    // Mostrar modal de ECG
+    window.UI.mostrarModalECG();
+    
+    // Verificar si se puede finalizar
+    if (verificarAccionesFundamentales()) {
+        redirigirAExito();
+    }
+    break;
+}
+    
+    // En el módulo SCORING, dentro de la función realizarAccion
+case 'acceso_venoso_periferico': {
+    // Registrar la acción y sumar puntos
+    const registered = registerAction('acceso_venoso_periferico', 15);
+    
+    if (registered) {
+        // Mostrar notificación al usuario
+        if (window.UI && window.UI.mostrarFeedback) {
+            window.UI.mostrarFeedback('✅ Acceso venoso periférico colocado y listo para usarse. (+15)');
+        }
+    } else {
+        // Mostrar mensaje si ya se había realizado
+        if (window.UI && window.UI.mostrarFeedback) {
+            window.UI.mostrarFeedback('✅ Acceso venoso periférico ya fue colocado.');
+        }
+    }
+    break;
+}
+case 'toracocentesis': {
+      // Mostrar mensaje de error
+      if (window.UI && window.UI.mostrarFeedback) {
+        window.UI.mostrarFeedback(
+          '⚠️ Acabas de realizar una toracocentesis al paciente equivocado', 
+          true
+        );
+      }
+      
+      // Restar 50 puntos
+      addPoints(-50);
+      
+      // Guardar motivo de finalización
+      localStorage.setItem('puntuacionFinal', puntuacion);
+      localStorage.setItem('motivoFin', 'toracocentesis_incorrecta');
+      
+      // Redirigir después de un breve retardo
+      setTimeout(() => {
+        window.location.href = 'fin_simulacion.html';
+      }, 1500);
+      break;
+    }
+case 'reanimacion_cpr': {
+      // Mostrar mensaje de error
+      if (window.UI && window.UI.mostrarFeedback) {
+        window.UI.mostrarFeedback(
+          '⚠️ El paciente solo estaba dormido, ahora tiene un gran dolor en el pecho y un susto por que lo aplastaron en el pecho', 
+          true
+        );
+      }
+      
+      // Restar 40 puntos
+      addPoints(-40);
+      
+      // Mostrar diálogo con la queja del paciente
+      if (window.UI && window.UI.mostrarDialogo) {
+        window.UI.mostrarDialogo(
+          "¡Ay! ¿Por qué me hiciste eso? Solo estaba durmiendo... Ahora me duele mucho el pecho", 
+          false
+        );
+      }
+      break;
+    }
+case 'soluciones': {
+      // Mostrar mensaje informativo
+      if (window.UI && window.UI.mostrarFeedback) {
+        window.UI.mostrarFeedback(
+          '💧 Soluciones cristaloides administrándose.'
+        );
+      }
+      break;
+    }
+     case 'glucosa_50': {
+        // Verificar acceso venoso
+        if (!acciones.has('acceso_venoso_periferico')) {
+            window.UI.mostrarFeedback('❌ No ha indicado el procedimiento necesario para poder administrar esta solución', true);
+            break;
+        }
+        
+        // NUEVA PENALIZACIÓN (-12 puntos)
+        const registered = registerAction('glucosa_50', -12);
+        window.UI.mostrarDialogo("Administrando Glucosa al 50%...", false);
+        
+        if (registered) {
+            // NUEVO MENSAJE
+            window.UI.mostrarFeedback('⚠️ Glucosa al 50% administrada: No veo como esto pueda ayudar a esta paciente (-12)');
+        }
+        break;
+        }
+      
+      case 'atropina': {
+        // Verificar acceso venoso previo
+        if (!acciones.has('acceso_venoso_periferico')) {
+            window.UI.mostrarFeedback('❌ No ha indicado el procedimiento necesario para poder administrar este medicamento', true);
+            break;
+        }
+         // Si ya se administró, no hacer nada
+    if (acciones.has('atropina')) {
+        window.UI.mostrarFeedback('💉 Atropina ya fue administrada.');
+        break;
+    }
+        // Administrar atropina (positivo)
+        const registered = registerAction('atropina', 25);
+        window.UI.mostrarDialogo("Administrando Atropina...", false);
+                if (registered) {
+            window.UI.mostrarFeedback('✅ Atropina administrada correctamente (+25)');
+        }
+        
+        // Iniciar aumento gradual de FC
+    window.UI.iniciarAumentoFC();
+    
+    // Verificar si se puede finalizar
+    if (verificarAccionesFundamentales()) {
+        setTimeout(() => {
+            redirigirAExito();
+        }, 4500); // Esperar a que termine la animación
+    }
+    break;
+}
+
+           
+      case 'glucagon': {
+        // Penalización por medicamento innecesario
+        const registered = registerAction('glucagon', -22);
+        window.UI.mostrarDialogo("Administrando Glucagón IM, el paciente no refiere mejoría.", false);
+        
+        if (registered) {
+            window.UI.mostrarFeedback('⚠️ Glucagon administrado: medicamento innecesario (-22)');
+        }
+      
+      // Mostrar feedback adicional
+      if (window.UI && window.UI.mostrarFeedback) {
+        window.UI.mostrarFeedback(
+          '💊 Glucagon administrado'
+        );
+      }
+      break;
+    }
+  case 'oxigeno': {
+      // Mostrar mensaje de acción realizada
+      if (window.UI && window.UI.mostrarDialogo) {
+        window.UI.mostrarDialogo(
+          "Oxígeno colocado por puntas nasales",
+          false
+        );
+      }
+      
+      // Restar puntos solo si es la primera vez que se realiza esta acción
+      if (!acciones.has('oxigeno_administrado')) {
+        // Registrar la acción para evitar penalización múltiple
+        acciones.add('oxigeno_administrado');
+        
+        // Restar 12 puntos
+        addPoints(-12);
+        
+        // Mostrar feedback explicativo
+        if (window.UI && window.UI.mostrarFeedback) {
+          window.UI.mostrarFeedback(
+            '⚠️ Oxígeno no indicado: el paciente ventila bien y tiene buena saturación (-12 puntos)', 
+            true
+          );
+        }
+      } else {
+        // Si ya se había penalizado, solo mostrar mensaje informativo
+        if (window.UI && window.UI.mostrarFeedback) {
+          window.UI.mostrarFeedback(
+            '⚠️ Oxígeno ya administrado previamente. No se aplica nueva penalización.'
+          );
+        }
+      }
+      break;
+    }
+  }
+}
+
+  // Evento para el botón de glucemia capilar
+  document.getElementById('btnGlucemia')?.addEventListener('click', () => {
+    realizarAccion('glucemia_capilar');
+  
+  });
+
+  // Exponer API
+  window.SCORING = {
+    registerAction,
+    addPoints,
+    hasAction,
+    getScore: () => puntuacion,
+    canReachMax,
+    PUNT_MAX,
+    realizarAccion
+  };
+})(window);
+</script>
+
+<!-- ====== MÓDULO: UI (usa SCORING) ====== -->
+<script>
+/**
+ * Módulo UI
+ * - Maneja DOM, eventos y comportamientos.
+ * - Usa SCORING.registerAction(...) para registrar pasos y puntuar.
+ */
+(function(window){ // Only pass window
+  // Helpers UI
+  const fb = document.getElementById('feedbackContainer');
+  function mostrarFeedback(msg, esError=false){
+    if(!fb) return;
+    fb.textContent = msg;
+    fb.style.borderLeftColor = esError ? 'var(--danger)' : 'var(--success)';
+    fb.classList.add('visible');
+    clearTimeout(fb._t);
+    fb._t = setTimeout(()=> fb.classList.remove('visible'), 2000);
+  }
+
+   // *** NUEVO: Referencias para el modal de imagen ***
+  const modalImagen = document.getElementById('modalImagenExploracion');
+  const cerrarModalImagenBtn = document.getElementById('cerrarModalImagen');
+  const imgDetalle = document.getElementById('imagenExploracionDetalle');
+  const tituloModalImagen = document.getElementById('modalImagenTitulo');
+
+  // *** NUEVO: Evento para cerrar el modal de imagen ***
+  cerrarModalImagenBtn?.addEventListener('click', () => {
+      modalImagen.classList.remove('visible');
+      modalImagen.setAttribute('aria-hidden', 'true');
+  });
+const modalECG = document.getElementById('modalECG');
+const cerrarModalECGBtn = document.getElementById('cerrarModalECG');
+
+// Evento para cerrar el modal del ECG
+cerrarModalECGBtn?.addEventListener('click', () => {
+  modalECG.classList.remove('visible');
+  modalECG.setAttribute('aria-hidden', 'true');
+});
+
+  // Dialogo y audio simulado (presentación/paciente)
+  const dialogoContainer = document.getElementById('dialogoContainer');
+  const dialogoTexto = document.getElementById('dialogoTexto');
+  const audioIndicator = document.getElementById('audioIndicator');
+  // Referencia a los elementos de audio
+  const sintomasAudio = document.getElementById('sintomasAudio');
+  const quesucedioAudio = document.getElementById('quesucedioAudio');
+  const diabetesAudio = document.getElementById('diabetesAudio');
+  const alergiasAudio = document.getElementById('alergiasAudio');
+  const presentacionAudio = document.getElementById('presentacionAudio');
+  let currentPlayingAudio = null; // Track which audio is currently playing
+
+  // Canvas for audio trace simulation
+  const audioTraceCanvas = document.getElementById('audioTraceCanvas');
+  const ctx = audioTraceCanvas ? audioTraceCanvas.getContext('2d') : null;
+  let animationFrameId = null;
+  let traceProgress = 0;
+  let isTraceAnimating = false;
+
+  // Function to draw the audio trace
+  function drawAudioTrace() {
+      if (!ctx || !audioTraceCanvas) return;
+
+      const width = audioTraceCanvas.width;
+      const height = audioTraceCanvas.height;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw background line
+      ctx.strokeStyle = '#334155'; // Muted color for background line
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, height / 2);
+      ctx.lineTo(width, height / 2);
+      ctx.stroke();
+
+      // Draw animated trace
+      ctx.strokeStyle = '#2563eb'; // Primary color for trace
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, height / 2);
+
+      // Simple sine wave simulation
+      const amplitude = height / 4;
+      const frequency = 0.05; // Adjust for more or fewer waves
+      const speed = 5; // Adjust for faster/slower animation
+
+      for (let i = 0; i < width; i++) {
+          const y = height / 2 + Math.sin((i + traceProgress) * frequency) * amplitude * (Math.random() * 0.5 + 0.5); // Randomness for organic feel
+          ctx.lineTo(i, y);
+      }
+      ctx.stroke();
+
+      if (isTraceAnimating) {
+          traceProgress += speed;
+          if (traceProgress > width * 2) { // Reset progress to avoid very large numbers
+              traceProgress = 0;
+          }
+          animationFrameId = requestAnimationFrame(drawAudioTrace);
+      }
+  }
+
+  // Start/Stop audio trace animation
+  function startAudioTrace() {
+      if (!isTraceAnimating) {
+          isTraceAnimating = true;
+          audioTraceCanvas.style.display = 'block'; // Show canvas
+          traceProgress = 0; // Reset trace on start
+          drawAudioTrace();
+      }
+  }
+
+  function stopAudioTrace() {
+      if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+      }
+      isTraceAnimating = false;
+      audioTraceCanvas.style.display = 'none'; // Hide canvas
+  }
+
+  // Adjust canvas size on window resize
+  window.addEventListener('resize', () => {
+      if (audioTraceCanvas) {
+          audioTraceCanvas.width = audioTraceCanvas.offsetWidth;
+          audioTraceCanvas.height = audioTraceCanvas.offsetHeight;
+          if (isTraceAnimating) {
+              drawAudioTrace(); // Redraw immediately if animating
+          }
+      }
+  });
+
+  // Initial canvas setup
+  document.addEventListener('DOMContentLoaded', () => {
+      if (audioTraceCanvas) {
+          audioTraceCanvas.width = audioTraceCanvas.offsetWidth;
+          audioTraceCanvas.height = audioTraceCanvas.offsetHeight;
+      }
+  });
+
+
+  function mostrarDialogo(texto, conAudio=false, audioSrc = null){
+    if(!dialogoContainer) return;
+
+    // Pause any currently playing audio and reset it
+    if (currentPlayingAudio) {
+        currentPlayingAudio.pause();
+        currentPlayingAudio.currentTime = 0;
+        stopAudioTrace(); // Stop trace if current audio is paused
+    }
+
+    dialogoTexto.textContent = texto;
+    dialogoContainer.classList.add('visible');
+    dialogoContainer.setAttribute('aria-hidden','false');
+    
+    if(conAudio && audioSrc){
+      audioIndicator.style.display = 'inline-block';
+      
+      // Determinar qué audio reproducir según la fuente
+      let audioToPlay = null;
+      switch(audioSrc) {
+        case 'audio/comosesiente3.mp3':
+          audioToPlay = sintomasAudio;
+          break;
+        case 'audio/lipotimiaanamaria.mp3':
+          audioToPlay = quesucedioAudio;
+          break;
+        case 'audio/nodiabetesanamaria.mp3':
+          audioToPlay = diabetesAudio;
+          break;
+        case 'audio/no.mp3':
+          audioToPlay = alergiasAudio;
+          break;
+        case 'audio/holadoctoranamaria.mp3':
+          audioToPlay = presentacionAudio;
+          break;
+        default:
+          audioToPlay = null;
+      }
+      
+      // Reproducir audio si está disponible
+      if (audioToPlay) {
+        audioToPlay.play();
+        currentPlayingAudio = audioToPlay;
+        startAudioTrace(); // Start trace animation when audio begins
+        
+        // Detener automáticamente cuando termine el audio
+        audioToPlay.onended = function() {
+          audioIndicator.style.display = 'none';
+          stopAudioTrace();
+          currentPlayingAudio = null;
+        };
+      }
+    } else {
+      audioIndicator.style.display = 'none';
+      currentPlayingAudio = null;
+      stopAudioTrace(); // Stop trace if no audio or audioSrc is null
+    }
+  }
+
+  document.getElementById('cerrarDialogo')?.addEventListener('click', ()=>{
+    dialogoContainer.classList.remove('visible');
+    dialogoContainer.setAttribute('aria-hidden','true');
+    if (currentPlayingAudio) {
+        currentPlayingAudio.pause();
+        currentPlayingAudio.currentTime = 0;
+        currentPlayingAudio = null;
+    }
+    audioIndicator.style.display = 'none';
+    stopAudioTrace(); // Stop trace when closing dialog manually
+  });
+
+  // VITALES: power buttons
+  const powerButtons = Array.from(document.querySelectorAll('.power-btn'));
+  const vitals = {
+    glucemia: {
+      card: document.getElementById('glucemiaCard'),
+      valorEl: document.getElementById('glucemiaValor'),
+      unitEl: document.getElementById('glucemiaUnit'),
+      value: document.getElementById('glucemiaCard')?.dataset?.value,
+      unit: document.getElementById('glucemiaCard')?.dataset?.unit
+    },
+    fc: {
+      card: document.getElementById('fcCard'),
+      valorEl: document.getElementById('fcValor'),
+      unitEl: document.getElementById('fcUnit'),
+      value: document.getElementById('fcCard')?.dataset?.value,
+      unit: document.getElementById('fcCard')?.dataset?.unit
+    },
+    pa: {
+      card: document.getElementById('paCard'),
+      valorEl: document.getElementById('paValor'),
+      unitEl: document.getElementById('paUnit'),
+      value: document.getElementById('paCard')?.dataset?.value,
+      unit: document.getElementById('paCard')?.dataset?.unit
+    },
+    sat: {
+      card: document.getElementById('satCard'),
+      valorEl: document.getElementById('satValor'),
+      unitEl: document.getElementById('satUnit'),
+      rrEl: document.getElementById('rrText'),
+      value: document.getElementById('satCard')?.dataset?.value,
+      unit: document.getElementById('satCard')?.dataset?.unit,
+      rr: 20
+    }
+  };
+
+  function setOff(v){
+    if(!v || !v.card) return;
+    v.card.classList.add('off');
+    v.card.classList.remove('critico');
+    const power = v.card.querySelector('.power-btn');
+    if (power) { power.classList.remove('on'); power.classList.add('off'); power.setAttribute('aria-pressed','false'); }
+    v.valorEl && (v.valorEl.textContent = '—');
+    v.unitEl && (v.unitEl.textContent = '—');
+    if (v.rrEl) v.rrEl.textContent = 'FR: — rpm';
+  }
+  Object.values(vitals).forEach(setOff);
+
+  function setOn(v, key){
+    if(!v || !v.card) return;
+    v.card.classList.remove('off');
+    const power = v.card.querySelector('.power-btn');
+    if (power) { power.classList.remove('off'); power.classList.add('on'); power.setAttribute('aria-pressed','true'); }
+    if (key === 'sat') {
+      v.valorEl.textContent = v.value;
+      v.unitEl.textContent = v.unit;
+      v.rrEl.textContent = `FR: ${v.rr} rpm`;
+    } else {
+      v.valorEl.textContent = v.value;
+      v.unitEl.textContent = v.unit;
+    }
+    // glucemia: marcar critico si <70
+    if (v.card.id === 'glucemiaCard') {
+      const num = parseFloat(v.value);
+      if (!isNaN(num) && num < 70) v.card.classList.add('critico');
+      else v.card.classList.remove('critico');
+    }
+    // registrar encendido como acción obligatoria (solo la primera vez)
+    const actName = `on_${key}`;
+    if (window.SCORING && window.SCORING.registerAction) { // Acceder a window.SCORING directamente
+      const registered = window.SCORING.registerAction(actName, 5); // encender: +5
+      if (registered) mostrarFeedback(`🔌 Monitor ${v.card.querySelector('.vital-nombre').textContent} encendido (+5)`);
+      else mostrarFeedback(`🔌 Monitor ${v.card.querySelector('.vital-nombre').textContent} ya estaba encendido`);
+    }
+  }
+
+  powerButtons.forEach(btn=>{
+    btn.addEventListener('click', () => {
+      const targetId = btn.dataset.target;
+      if (!targetId) return;
+      const mapping = { glucemiaCard:'glucemia', fcCard:'fc', paCard:'pa', satCard:'sat' };
+      const key = mapping[targetId];
+      if (!key) return;
+      const v = vitals[key];
+      const card = document.getElementById(targetId);
+      const isOff = card.classList.contains('off');
+      if (isOff) {
+        btn.disabled = true;
+        mostrarFeedback(`⌛ Obteniendo lectura de ${v.card.querySelector('.vital-nombre').textContent}...`);
+        setTimeout(()=> { setOn(v,key); btn.disabled = false; }, 600);
+      } else {
+        setOff(v);
+        mostrarFeedback(`🔌 Monitor ${v.card.querySelector('.vital-nombre').textContent} apagado`);
+      }
+    });
+  });
+
+  
+  // Explorar: menú flotante
+  const exploracionBtn = document.querySelector('.categoria-btn[data-categoria="exploracion"]');
+  const menuExploracion = document.getElementById('menuExploracionFlotante');
+  const cerrarMenuExpl = document.getElementById('cerrarMenuExpl');
+  const opcionesExpl = Array.from(menuExploracion.querySelectorAll('.opcion'));
+  const totalOpcionesMenu = 5;
+  const menuClicks = new Set();
+
+  if (exploracionBtn) {
+    exploracionBtn.addEventListener('click', () => {
+      document.querySelectorAll('.categoria-btn').forEach(btn => btn.classList.remove('activo'));
+      exploracionBtn.classList.add('activo');
+      document.querySelectorAll('.acciones-container').forEach(c => c.classList.remove('visible'));
+      const cont = document.getElementById('exploracionAcciones');
+      if (cont) cont.classList.add('visible');
+      const opening = !menuExploracion.classList.contains('visible');
+      if (opening) {
+        menuExploracion.classList.add('visible'); menuExploracion.setAttribute('aria-hidden','false');
+      } else {
+        menuExploracion.classList.remove('visible'); menuExploracion.setAttribute('aria-hidden','true');
+      }
+    });
+  }
+  cerrarMenuExpl.addEventListener('click', ()=> {
+    menuExploracion.classList.remove('visible'); menuExploracion.setAttribute('aria-hidden','true');
+  });
+const btnECG = document.querySelector('.accion-btn[data-accion="ecg"]');
+if (btnECG) {
+    btnECG.addEventListener('click', () => {
+        // Llamar a la función de scoring en lugar de mostrar directamente
+        window.SCORING.realizarAccion('ecg');
+    });
+}
+
+  opcionesExpl.forEach(btn=>{
+    btn.addEventListener('click', function(){
+      const accion = this.dataset.accion;
+      
+      // *** LÓGICA MODIFICADA PARA MOSTRAR MODAL ***
+      if (accion === 'via_aerea') {
+          if (modalImagen && imgDetalle && tituloModalImagen) {
+              tituloModalImagen.textContent = 'Exploración de Vía Aérea';
+              imgDetalle.src = 'imagenes/viaaerea.jpg';
+              imgDetalle.alt = 'Imagen detallada de la vía aérea del paciente.';
+              modalImagen.classList.add('visible');
+              modalImagen.setAttribute('aria-hidden', 'false');
+          }
+      } else if (accion === 'ventilacion') { // Handle "Ventilación" click
+          // Notification for "Ventilación"
+          window.UI && window.UI.mostrarFeedback && window.UI.mostrarFeedback('✅ Ambos pulmones'); // Acceder a window.UI directamente
+      } else if (accion === 'circulacion') { // Handle "Circulación" click
+          // Notification for "Circulación"
+          window.UI && window.UI.mostrarFeedback && window.UI.mostrarFeedback('✅ Pulso normal'); // Acceder a window.UI directamente
+      }
+      
+      const accionReal = accion === 'neurologica_expl' ? 'neurologica' : accion;
+       // Llamar a la función de scoring
+      window.SCORING && window.SCORING.realizarAccion ? window.SCORING.realizarAccion(accionReal) : null; // Acceder a window.SCORING directamente
+
+      // llamar a realizarAccion (UI define)
+       // window.UI && window.UI.realizarAccion ? window.UI.realizarAccion(accionReal) : null; 
+      if (!this.classList.contains('selected')) {
+        this.classList.add('selected'); menuClicks.add(accion);
+      }
+      if (menuClicks.size >= totalOpcionesMenu) {
+        mostrarFeedback('✅ Exploración completa: todas las opciones revisadas');
+        setTimeout(()=> { menuExploracion.classList.remove('visible'); menuExploracion.setAttribute('aria-hidden','true'); }, 350);
+      }
+    });
+  });
+
+  // Estudios: química sanguínea
+  const btnQuimica = document.getElementById('btnQuimica');
+  const reporteQuimica = document.getElementById('reporteQuimica');
+  const cerrarReporte = document.getElementById('cerrarReporte');
+
+  btnQuimica?.addEventListener('click', ()=> {
+    const registered = window.SCORING && window.SCORING.registerAction ? window.SCORING.registerAction('visto_quimica', 10) : false; // Acceder a window.SCORING directamente
+    if (registered) mostrarFeedback('📄 Mostrando reporte de Química Sanguínea (+10)');
+    else mostrarFeedback('📄 Reporte de Química Sanguínea (ya visto)');
+    reporteQuimica.classList.add('visible'); reporteQuimica.setAttribute('aria-hidden','false');
+  });
+  cerrarReporte?.addEventListener('click', ()=> {
+    reporteQuimica.classList.remove('visible'); reporteQuimica.setAttribute('aria-hidden','true');
+  });
+
+  // Interrogatorio: mostrar Presentación encima de Síntomas
+  const btnInterrogatorio = document.getElementById('btnInterrogatorio');
+  const btnPresentacion = document.getElementById('btnPresentacion');
+  const btnSintomas = document.getElementById('btnSintomas');
+  const gridInterrogatorio = document.getElementById('gridInterrogatorio');
+  const sintomasPreguntas = document.getElementById('sintomasPreguntas');
+  const volverSintomas = document.getElementById('volverSintomas');
+
+  btnInterrogatorio?.addEventListener('click', ()=>{
+    document.querySelectorAll('.categoria-btn').forEach(btn => btn.classList.remove('activo'));
+    btnInterrogatorio.classList.add('activo');
+    document.querySelectorAll('.acciones-container').forEach(c => c.classList.remove('visible'));
+    const cont = document.getElementById('interrogatorioAcciones');
+    if (cont) cont.classList.add('visible');
+    // mostrar Presentación arriba de Síntomas
+    if (btnPresentacion.style.display === 'none' || btnPresentacion.style.display === '') {
+      btnPresentacion.style.display = 'flex';
+      if (gridInterrogatorio && btnSintomas) gridInterrogatorio.insertBefore(btnPresentacion, btnSintomas);
+    }
+  });
+  // Referencias para Antecedentes Médicos
+  const btnAntecedentes = document.getElementById('btnAntecedentes');
+  const antecedentesPreguntas = document.getElementById('antecedentesPreguntas');
+  const volverAntecedentes = document.getElementById('volverAntecedentes');
+  // Define ELEMENTOS_GRID_INTERROGATORIO to refer to all top-level buttons in the interrogatorio grid
+  const ELEMENTOS_GRID_INTERROGATORIO = document.querySelectorAll('#gridInterrogatorio > .accion-btn');
+
+    // Manejo del botón "Antecedentes Médicos"
+    if (btnAntecedentes) {
+        btnAntecedentes.addEventListener('click', () => {
+        // Colapsar el submenú de síntomas si está abierto
+    colapsarSintomas();
+            // Ocultar todos los botones principales de interrogatorio EXCEPTO el botón de Antecedentes Médicos
+    ELEMENTOS_GRID_INTERROGATORIO.forEach(btn => {
+      if (btn !== btnAntecedentes) {
+        btn.style.display = 'none';
+      }
+    });
+
+            // Mostrar el submenú de antecedentes
+            antecedentesPreguntas.style.display = 'block';
+
+            // Registrar acción
+            if (window.SCORING && window.SCORING.registerAction) { // Acceder a window.SCORING directamente
+                const r = window.SCORING.registerAction('antecedentes', 5);
+                const msg = r ? '✅ Abrió Antecedentes Médicos (+5)' : '✅ Antecedentes Médicos ya abierto';
+                window.UI?.mostrarFeedback?.(msg); // Acceder a window.UI directamente
+            }
+        });
+    }
+
+     // Volver al menú principal (Antecedentes)
+    if (volverAntecedentes) {
+        volverAntecedentes.addEventListener('click', () => {
+           colapsarSintomas();
+                // Restaurar todos los botones principales de interrogatorio
+    ELEMENTOS_GRID_INTERROGATORIO.forEach(btn => {
+      btn.style.display = 'flex';
+    });
+            
+            // Ocultar submenú
+            antecedentesPreguntas.style.display = 'none';
+        });
+    }
+
+  // Manejadores para las preguntas específicas de antecedentes
+  document.querySelectorAll('#antecedentesPreguntas .accion-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const accionData = PREGUNTAS_ANTECEDENTES[this.dataset.accion];
+        if (accionData && window.UI?.mostrarDialogo) {
+                      
+        }
+        // Note: The previous logic was registering 'sintomas' for antecedentes questions.
+        // If this is intentional for scoring purposes, keep it. Otherwise, adjust.
+        if (window.SCORING && window.SCORING.registerAction) { // Acceder a window.SCORING directamente
+            const r = window.SCORING.registerAction(this.dataset.accion, 2); // Example: give 2 points for each antecedente question
+            if (r) mostrarFeedback(`✅ Pregunta de antecedentes realizada (+2)`);
+            else mostrarFeedback(`✅ Pregunta de antecedentes ya realizada`);
+        }
+    });
+  });
+  
+
+  // Handler general de botones de acción (panel izquierdo)
+  document.querySelectorAll('.accion-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> {
+      const accion = btn.getAttribute('data-accion');
+      // Changed to call SC.realizarAccion directly, as it's now exposed
+      window.SCORING && window.SCORING.realizarAccion ? window.SCORING.realizarAccion(accion) : null;
+    });
+  });
+  
+  function mostrarImagenModal(titulo, src, alt) {
+    if (modalImagen && imgDetalle && tituloModalImagen) {
+      tituloModalImagen.textContent = titulo;
+      imgDetalle.src = src;
+      imgDetalle.alt = alt;
+      modalImagen.classList.add('visible');
+      modalImagen.setAttribute('aria-hidden', 'false');
+    }
+  }
+  // Añadir función para aumentar gradualmente la FC
+function iniciarAumentoFC() {
+    const fcCard = document.getElementById('fcCard');
+    if (!fcCard) return;
+    
+    let currentFC = 42;
+    const targetFC = 66;
+    const increment = 4;
+    const interval = 400; // ms entre aumentos
+    
+    const intervalId = setInterval(() => {
+        currentFC += increment;
+        fcCard.dataset.value = currentFC;
+        
+        // Actualizar visualización si el monitor está encendido
+        if (!fcCard.classList.contains('off')) {
+            document.getElementById('fcValor').textContent = currentFC;
+        }
+        
+        if (currentFC >= targetFC) {
+            clearInterval(intervalId);
+        }
+    }, interval);
+}
+
+// Hacer que las funciones sean accesibles globalmente
+window.UI = window.UI || {};
+window.UI.mostrarFeedback = mostrarFeedback;
+window.UI.mostrarDialogo = mostrarDialogo;
+window.UI.mostrarImagenModal = mostrarImagenModal;
+window.UI.iniciarAumentoFC = iniciarAumentoFC;
+window.UI.mostrarModalECG = function() {
+    const modalECG = document.getElementById('modalECG');
+    if (modalECG) {
+        modalECG.classList.add('visible');
+        modalECG.setAttribute('aria-hidden', 'false');
+    }
+};
+
+// Modal Soluciones IV
+const modalSolucionesIV = document.getElementById('modalSolucionesIV');
+const cerrarModalSolucionesIV = document.getElementById('cerrarModalSolucionesIV');
+const opcionesSolucion = document.querySelectorAll('.opcion-solucion');
+
+// Mostrar modal al hacer clic en "Soluciones IV"
+document.querySelector('.accion-btn[data-accion="soluciones_iv"]')?.addEventListener('click', () => {
+  modalSolucionesIV.classList.add('visible');
+  modalSolucionesIV.setAttribute('aria-hidden', 'false');
+});
+
+// Cerrar modal
+cerrarModalSolucionesIV?.addEventListener('click', () => {
+  modalSolucionesIV.classList.remove('visible');
+  modalSolucionesIV.setAttribute('aria-hidden', 'true');
+});
+
+// Manejar selección de solución
+opcionesSolucion.forEach(btn => {
+  btn.addEventListener('click', function() {
+    const solucion = this.dataset.solucion;
+    
+    // Verificar si tiene acceso venoso
+    if (!window.SCORING.hasAction('acceso_venoso_periferico')) {
+      // Mostrar mensaje de error
+      window.UI.mostrarFeedback('❌ No ha indicado ningún acceso venoso por donde administrar esta indicación.', true);
+      
+      // Reproducir audio de advertencia
+      const nohayaccesoAudio = document.getElementById('nohayaccesoAudio');
+      if (nohayaccesoAudio) {
+        nohayaccesoAudio.currentTime = 0;
+        nohayaccesoAudio.play().catch(e => console.log("Error reproduciendo audio: ", e));
+      }
+      
+      // Penalizar con -20 puntos
+      window.SCORING.addPoints(-20);
+      return;
+    }
+    
+    // Si tiene acceso, proceder con la administración
+    window.UI.mostrarFeedback(`💧 ${solucion} administrada`);
+    modalSolucionesIV.classList.remove('visible');
+    modalesIV.setAttribute('aria-hidden', 'true');
+    
+    // Registrar la acción de administrar solución (opcional, si quieres llevar registro)
+    window.SCORING.registerAction(`admin_${solucion.replace(/\s+/g, '_').toLowerCase()}`, 0);
+  });
+});
+
+// Modal ANTIARRITMICOS
+const modalAntiarritmicos = document.getElementById('modalAntiarritmicos');
+const cerrarModalAntiarritmicos = document.getElementById('cerrarModalAntiarritmicos');
+const opcionesAntiarritmico = document.querySelectorAll('.opcion-antiarritmico');
+
+// Mostrar modal al hacer clic en "ANTIARRITMICOS IV" - CORREGIDO
+document.querySelector('.accion-btn[data-accion="antiarritmicos"]')?.addEventListener('click', () => {
+  modalAntiarritmicos.classList.add('visible');
+  modalAntiarritmicos.setAttribute('aria-hidden', 'false');
+});
+
+// Cerrar modal
+cerrarModalAntiarritmicos?.addEventListener('click', () => {
+  modalAntiarritmicos.classList.remove('visible');
+  modalAntiarritmicos.setAttribute('aria-hidden', 'true');
+});
+
+// Manejar selección de antiarrítmico
+opcionesAntiarritmico.forEach(btn => {
+  btn.addEventListener('click', function() {
+    const antiarritmico = this.dataset.antiarritmico;
+    
+    // Verificar si tiene acceso venoso
+    if (!window.SCORING.hasAction('acceso_venoso_periferico')) {
+      window.UI.mostrarFeedback('❌ No ha indicado ningún acceso venoso', true);
+      
+      const nohayaccesoAudio = document.getElementById('nohayaccesoAudio');
+      if (nohayaccesoAudio) {
+        nohayaccesoAudio.play().catch(e => console.log("Error reproduciendo audio: ", e));
+      }
+      
+      window.SCORING.addPoints(-20);
+      return;
+    }
+    
+    window.UI.mostrarFeedback(`💉 ${antiarritmico} administrado`);
+    modalAntiarritmicos.classList.remove('visible');
+    modalAntiarritmicos.setAttribute('aria-hidden', 'true');
+    
+    window.SCORING.registerAction(`admin_${antiarritmico.replace(/\s+/g, '_').toLowerCase()}`, 0);
+  });
+});
+// Pausa / volver
+document.getElementById('pausaBtn')?.addEventListener('click', ()=> mostrarFeedback('⏸️ Simulación en pausa'));
+document.getElementById('volverBtn')?.addEventListener('click', ()=> {
+    if (confirm('¿Terminar simulación? El progreso se perderá.')) window.location.href = 'index.html';
+});
+
+})(window); 
+// Inicializar ECG
+window.addEventListener('DOMContentLoaded', () => {
+  // Iniciar la animación del ECG
+  window.ECG.start();
+  
+  // Actualizar indicador de frecuencia cardíaca
+  window.ECG.updateHeartRate(42);
+});
+</script>
+
+
+<!-- ====== TEMPORIZADOR OPTIMIZADO ====== -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Configuración
+    const TIEMPO_TOTAL = 18 * 60; // 18 minutos en segundos
+    const ALERTA_CRITICA = 120; // 2 minutos en segundos
+    
+    // Estado
+    let tiempoRestante = TIEMPO_TOTAL;
+    let temporizadorActivo = true;
+    let intervalo = null;
+    
+    // Referencias DOM
+    const tiempoElemento = document.getElementById('tiempo');
+    const tiempoContainer = document.getElementById('tiempoContainer');
+    const pausaBtn = document.getElementById('pausaBtn');
+    
+    // Funciones optimizadas
+    const formatearTiempo = (segundos) => {
+        const minutos = Math.floor(segundos / 60);
+        return `${minutos.toString().padStart(2, '0')}:${(segundos % 60).toString().padStart(2, '0')}`;
+    };
+    
+    const actualizarTemporizador = () => {
+        if (!temporizadorActivo) return;
+        
+        // Actualizar visualización
+        tiempoElemento.textContent = formatearTiempo(tiempoRestante);
+        
+        // Manejar estado crítico
+        const esCritico = tiempoRestante <= ALERTA_CRITICA;
+        tiempoContainer.classList.toggle('critico', esCritico);
+        
+        // Manejar finalización
+        if (tiempoRestante <= 0) {
+            clearInterval(intervalo);
+            redirigirAFinalizacion();
+            return;
+        }
+        
+        tiempoRestante--;
+    };
+    
+    const alternarPausa = () => {
+        temporizadorActivo = !temporizadorActivo;
+        pausaBtn.textContent = temporizadorActivo ? '⏸️ Pausa' : '▶️ Reanudar';
+        
+        // Feedback con verificación segura
+        if (window.UI && window.UI.mostrarFeedback) {
+            window.UI.mostrarFeedback(temporizadorActivo 
+                ? '▶️ Simulación reanudada' 
+                : '⏸️ Simulación en pausa');
+        }
+    };
+    
+    const redirigirAFinalizacion = () => {
+        // Guardar puntuación con verificación segura
+        const puntuacion = window.SCORING ? window.SCORING.getScore() : 0;
+        localStorage.setItem('puntuacionFinal', puntuacion);
+        window.location.href = 'fin_simulacion.html';
+    };
+    
+    // Iniciar temporizador
+    intervalo = setInterval(actualizarTemporizador, 1000);
+    
+    // Manejar evento de pausa
+    pausaBtn.addEventListener('click', alternarPausa);
+    
+    // Inicializar visualización
+    actualizarTemporizador();
+});
+// Función para manejar categorías (reutilizable)
+function manejarCategoria(btn, contenedorId) {
+    document.querySelectorAll('.categoria-btn').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    document.querySelectorAll('.acciones-container').forEach(c => c.classList.remove('visible'));
+    const cont = document.getElementById(contenedorId);
+    if (cont) cont.classList.add('visible');
+}
+
+// Configurar categorías
+const CATEGORIAS = {
+    interrogatorio: 'interrogatorioAcciones',
+    exploracion: 'exploracionAcciones',
+    estudios: 'estudiosAcciones',
+    procedimientos: 'procedimientosAcciones',
+    tratamiento: 'tratamientoAcciones'
+};
+
+Object.entries(CATEGORIAS).forEach(([categoria, contenedorId]) => {
+    const btn = document.querySelector(`.categoria-btn[data-categoria="${categoria}"]`);
+    btn?.addEventListener('click', () => manejarCategoria(btn, contenedorId));
+});
+
+// Referencias a elementos
+const ELEMENTOS = {
+    btnSintomas: document.getElementById('btnSintomas'),
+    sintomasPreguntas: document.getElementById('sintomasPreguntas'),
+    volverSintomas: document.getElementById('volverSintomas'),
+    gridInterrogatorioButtons: document.querySelectorAll('#gridInterrogatorio > .accion-btn') // Renamed for clarity
+};
+
+// Manejo de síntomas
+if (ELEMENTOS.btnSintomas) {
+    ELEMENTOS.btnSintomas.addEventListener('click', () => {
+        // Ocultar elementos principales, excepto el botón de Antecedentes Médicos
+        ELEMENTOS.gridInterrogatorioButtons.forEach(btn => {
+            if (btn.id !== 'btnAntecedentes') { // Exclude Antecedentes button
+                btn.style.display = 'none';
+            }
+        });
+        
+        // Mostrar submenú
+        ELEMENTOS.sintomasPreguntas.style.display = 'block';
+        
+        // Registrar acción
+        if (window.SCORING && window.SCORING.registerAction) { // Acceder a window.SCORING directamente
+            const r = window.SCORING.registerAction('sintomas', 5);
+            const msg = r ? '✅ Abrió Síntomas Actuales (+5)' : '✅ Síntomas Actuales ya abierto';
+            window.UI?.mostrarFeedback?.(msg); // Acceder to window.UI directamente
+        }
+    });
+}
+
+// Volver al menú principal
+if (ELEMENTOS.volverSintomas) {
+    ELEMENTOS.volverSintomas.addEventListener('click', () => {
+        ELEMENTOS.gridInterrogatorioButtons.forEach(btn => btn.style.display = 'flex');
+        ELEMENTOS.sintomasPreguntas.style.display = 'none';
+    });
+}
+// Función para colapsar el submenú de síntomas
+function colapsarSintomas() {
+  const sintomasPreguntas = document.getElementById('sintomasPreguntas');
+  if (sintomasPreguntas && sintomasPreguntas.style.display === 'block') {
+    sintomasPreguntas.style.display = 'none';
+    
+    // Restaurar visualización de todos los botones principales
+    const gridInterrogatorioButtons = document.querySelectorAll('#gridInterrogatorio > .accion-btn');
+    gridInterrogatorioButtons.forEach(btn => {
+      btn.style.display = 'flex';
+    });
+  }
+}
+// Manejadores para preguntas específicas
+const PREGUNTAS_SINTOMAS = {
+    como_se_siente: {
+        text: "Senti que me iba a desmayar, se me nublo la vista, ya empiezo a sentirme mejor",
+        audio: "audio/comosesiente3.mp3"
+    },
+    que_sucedio: {
+        text: "Estaba en el gimnasio en la caminadora, cuando de repente se me nublo la vista y me caí",
+        audio: "audio/lipotimiaanamaria.mp3"
+    }
+};
+
+document.querySelectorAll('#sintomasPreguntas .accion-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const accionData = PREGUNTAS_SINTOMAS[this.dataset.accion];
+        if (accionData && window.UI?.mostrarDialogo) { // Acceder a window.UI directamente
+            window.UI.mostrarDialogo(accionData.text, true, accionData.audio);
+        }
+        
+        // Registrar la acción en el sistema de puntuación
+        if (window.SCORING && window.SCORING.registerAction) {
+            const r = window.SCORING.registerAction(this.dataset.accion, 2);
+            if (r) mostrarFeedback(`✅ Pregunta realizada (+2)`);
+            else mostrarFeedback(`✅ Pregunta ya realizada`);
+        }
+    });
+});
+// Referencias para Antecedentes Médicos
+const ELEMENTOS_ANTECEDENTES = {
+    btn: document.getElementById('btnAntecedentes'),
+    contenedor: document.getElementById('antecedentesPreguntas'),
+    volver: document.getElementById('volverAntecedentes'),
+    // No longer needs gridItems here, as we use ELEMENTOS.gridInterrogatorioButtons
+};
+
+// Diccionario de preguntas/respuestas
+const PREGUNTAS_ANTECEDENTES = {
+    tiene_diabetes: { text: "No tengo diabetes, tampoco presión alta, soy muy sana hasta hoy" ,
+    audio: "audio/femalenotengo.mp3"}, 
+    tiene_alergias: { text: "No, no tengo",
+    audio: "audio/femalenotengo.mp3"}
+};
+
+// Mostrar submenú de Antecedentes
+if (ELEMENTOS_ANTECEDENTES.btn) {
+    ELEMENTOS_ANTECEDENTES.btn.addEventListener('click', () => {
+        // Ocultar todos los botones principales de interrogatorio EXCEPTO el botón de Antecedentes Médicos
+        ELEMENTOS.gridInterrogatorioButtons.forEach(btn => {
+            if (btn !== ELEMENTOS_ANTECEDENTES.btn) { // If it's not the Antecedentes button itself
+                btn.style.display = 'none';
+            }
+        });
+        
+        // Mostrar submenú
+        ELEMENTOS_ANTECEDENTES.contenedor.style.display = 'block';
+        
+        // Registrar acción
+        if (window.SCORING && window.SCORING.registerAction) { // Acceder a window.SCORING directamente
+            const r = window.SCORING.registerAction('antecedentes', 5);
+            const msg = r ? '✅ Abrió Antecedentes Médicos (+5)' : '✅ Antecedentes Médicos ya abierto';
+            window.UI?.mostrarFeedback?.(msg); // Acceder a window.UI directamente
+        }
+    });
+}
+
+// Volver al menú principal
+if (ELEMENTOS_ANTECEDENTES.volver) {
+    ELEMENTOS_ANTECEDENTES.volver.addEventListener('click', () => {
+        // Restaurar todos los botones principales de interrogatorio
+        ELEMENTOS.gridInterrogatorioButtons.forEach(btn => {
+            btn.style.display = 'flex';
+        });
+        
+        // Ocultar submenú
+        ELEMENTOS_ANTECEDENTES.contenedor.style.display = 'none';
+    });
+}
+
+// Manejadores para preguntas específicas
+document.querySelectorAll('#antecedentesPreguntas .accion-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const accionData = PREGUNTAS_ANTECEDENTES[this.dataset.accion];
+        if (accionData && window.UI?.mostrarDialogo) { // Acceder a window.UI directamente
+            window.UI.mostrarDialogo(accionData.text, true, accionData.audio);
+        }
+        // Note: The previous logic was registering 'sintomas' for antecedentes questions.
+        // If this is intentional for scoring purposes, keep it. Otherwise, adjust.
+        if (window.SCORING && window.SCORING.registerAction) { // Acceder a window.SCORING directamente
+            const r = window.SCORING.registerAction(this.dataset.accion, 2); // Example: give 2 points for each antecedente question
+            if (r) mostrarFeedback(`✅ Pregunta de antecedentes realizada (+2)`);
+            else mostrarFeedback(`✅ Pregunta de antecedentes ya realizada`);
+        }
+    });
+});
+</script>
+</body>
+</html>
