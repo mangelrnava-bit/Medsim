@@ -1,0 +1,574 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contexto Clínico - MedSim</title>
+    <style>
+        /* Variables de color */
+        :root {
+            --primary: #2563eb;       /* Azul médico */
+            --secondary: #0ea5e9;     /* Azul claro */
+            --dark: #1e293b;          /* Azul oscuro */
+            --light: #f1f5f9;         /* Gris claro */
+            --accent: #10b981;        /* Verde acción */
+            --text: #334155;          /* Color de texto principal */
+        }
+
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .volver-btn {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 0.5rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .volver-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Contenido principal */
+        .contexto-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contexto-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1.5rem;
+        }
+
+        .contexto-header h1 {
+            font-size: 2.2rem;
+            color: var(--dark);
+            margin-bottom: 0.8rem;
+        }
+
+        .contexto-content {
+            line-height: 1.8;
+            font-size: 1.1rem;
+            margin-bottom: 2.5rem;
+            flex-grow: 1;
+        }
+
+        .contexto-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Botón de inicio */
+        .iniciar-container {
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .iniciar-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s, background 0.3s;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+        }
+
+        .iniciar-btn:hover {
+            background: #0da271;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Indicador de audio (para versión avanzada) */
+        .audio-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .contexto-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .contexto-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .contexto-content {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">MedSim</div>
+        <button class="volver-btn">Volver a Casos</button>
+    </header>
+
+    <main class="contexto-container">
+        <div class="contexto-header">
+            <h1 id="caso-titulo">Informe</h1>
+        </div>
+        
+        <div class="contexto-content" id="caso-contenido">
+            <!-- Contenido dinámico se cargará aquí -->
+        </div>
+        
+        <div class="iniciar-container">
+            <button class="iniciar-btn" id="iniciarBtn">Iniciar Simulación</button>
+            <div class="audio-indicator">
+                🔈 En versiones avanzadas, se incluirá narración de voz
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 MedSim - Simulador Médico para Profesionales de la Salud</p>
+    </footer>
+
+    <script>
+        // Elementos del DOM
+        const iniciarBtn = document.getElementById('iniciarBtn');
+        const volverBtn = document.querySelector('.volver-btn');
+        const casoTitulo = document.getElementById('caso-titulo');
+        const casoContenido = document.getElementById('caso-contenido');
+        
+        // Definir contenido para cada caso
+        const casos = {
+            1: {
+                titulo: "Caso 1: Paciente con pérdida de conciencia",
+                contenido: `
+                    <p>Un hombre de 64 años fue encontrado inconsciente en el piso de su casa, fue encontrado por su hijo, cuando este fue a buscarlo por que no contestaba el teléfono. Su hijo lo trae al servicio de Urgencias del Hospital Morelos, en el trayecto comenzó a mover sus extremidades y a decir cosas incoherentes.</p>
+                    <p>En este momento es capaz de hablar, con mayor fluidez y coherencia, pero arrastra un poco la lengua al hablar. Le refirió a la enfermera, que se siente mareado, y muy débil.</p>
+                `
+            },
+            2: {
+                titulo: "Caso 2: Paciente con cefalea y bradicardia",
+                contenido: `
+                    <p>Masculino de 70 años llega a urgencias con Cefalea y leve disnea. El dolor comenzó hace 2 horas mientras descansaba. Refiere cefalea holocraneana, intensidad 7/10 en EVA, con fatiga y debilidad. Tiene antecedentes de hipertensión y diabetes.</p>
+                    <p>Al examen físico se observa diaforético. Refiere también náuseas y sensación de ahogo.</p>
+                `
+            },
+            3: {
+                titulo: "Caso 3: Lipotimia",
+                contenido: `
+                    <p>Almendra es una joven de 23 años, que pierde el equilibrio y la fuerza durante un entrenamiento de cardio en el gimnasio, sus compañeros la trajeron al Hospital en automovil particular.</p>
+                    <p>Se observa somnolienta, con respuesta al estimulo verbal.</p>
+                `
+            },
+            4: {
+                titulo: "Caso 4: Paciente con dolor abdominal",
+                contenido: `
+                    <p>Paciente femenina de 35 años acude a urgencias por dolor abdominal intenso de 24 horas de evolución. El dolor se localiza en el cuadrante inferior derecho y se acompaña de náuseas y vómitos.</p>
+                    <p>Al examen físico se encuentra febril (38.5°C) y con defensa muscular en el hemiabdomen derecho. Refiere pérdida de apetito y escalofríos.</p>
+                `
+            }
+        };
+        
+        // Función para cargar el contenido del caso
+        function cargarContenidoCaso() {
+            // Obtener ID del caso
+            const casoId = sessionStorage.getItem('casoSeleccionado') || "1";
+            
+            // Cargar contenido específico para el caso
+            if (casos[casoId]) {
+                casoTitulo.textContent = casos[casoId].titulo;
+                casoContenido.innerHTML = casos[casoId].contenido;
+            } else {
+                // Caso por defecto si no se encuentra el ID
+                casoTitulo.textContent = "Caso no encontrado";
+                casoContenido.innerHTML = `<p>Lo sentimos, no se encontró información para este caso.</p>`;
+            }
+        }
+        
+        // Función para determinar el archivo de simulación
+        function obtenerArchivoSimulacion(casoId) {
+            const casos = {
+                1: "simulacion.html",
+                2: "simulacion_bradicardia_sinusal.html", // Modificado para caso 2
+                3: "simulacion3.html",
+                4: "simulacion_nuevo.html"
+            };
+            return casos[casoId] || "simulacion.html";
+        }
+        
+        // Al cargar la página, cargar el contenido del caso
+        document.addEventListener('DOMContentLoaded', cargarContenidoCaso);
+        
+        // Redirigir a la simulación
+        iniciarBtn.addEventListener('click', () => {
+            // Obtener ID del caso
+            const casoId = sessionStorage.getItem('casoSeleccionado') || "1";
+            
+            // Determinar qué simulación usar
+            const archivoSimulacion = obtenerArchivoSimulacion(casoId);
+            
+            // Guardar tiempo por defecto (20 min)
+            sessionStorage.setItem('tiempoSimulacion', 20);
+            
+            // Redirigir a la simulación correcta
+            window.location.href = archivoSimulacion;
+        });
+        
+        // Volver a la selección de casos
+        volverBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+=======
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contexto Clínico - MedSim</title>
+    <style>
+        /* Variables de color */
+        :root {
+            --primary: #2563eb;       /* Azul médico */
+            --secondary: #0ea5e9;     /* Azul claro */
+            --dark: #1e293b;          /* Azul oscuro */
+            --light: #f1f5f9;         /* Gris claro */
+            --accent: #10b981;        /* Verde acción */
+            --text: #334155;          /* Color de texto principal */
+        }
+
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .volver-btn {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 0.5rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .volver-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Contenido principal */
+        .contexto-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contexto-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1.5rem;
+        }
+
+        .contexto-header h1 {
+            font-size: 2.2rem;
+            color: var(--dark);
+            margin-bottom: 0.8rem;
+        }
+
+        .contexto-content {
+            line-height: 1.8;
+            font-size: 1.1rem;
+            margin-bottom: 2.5rem;
+            flex-grow: 1;
+        }
+
+        .contexto-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Botón de inicio */
+        .iniciar-container {
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .iniciar-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s, background 0.3s;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+        }
+
+        .iniciar-btn:hover {
+            background: #0da271;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Indicador de audio (para versión avanzada) */
+        .audio-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .contexto-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .contexto-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .contexto-content {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">MedSim</div>
+        <button class="volver-btn">Volver a Casos</button>
+    </header>
+
+    <main class="contexto-container">
+        <div class="contexto-header">
+            <h1 id="caso-titulo">Informe</h1>
+        </div>
+        
+        <div class="contexto-content" id="caso-contenido">
+            <!-- Contenido dinámico se cargará aquí -->
+        </div>
+        
+        <div class="iniciar-container">
+            <button class="iniciar-btn" id="iniciarBtn">Iniciar Simulación</button>
+            <div class="audio-indicator">
+                🔈 En versiones avanzadas, se incluirá narración de voz
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 MedSim - Simulador Médico para Profesionales de la Salud</p>
+    </footer>
+
+    <script>
+        // Elementos del DOM
+        const iniciarBtn = document.getElementById('iniciarBtn');
+        const volverBtn = document.querySelector('.volver-btn');
+        const casoTitulo = document.getElementById('caso-titulo');
+        const casoContenido = document.getElementById('caso-contenido');
+        
+        // Definir contenido para cada caso
+        const casos = {
+            1: {
+                titulo: "Caso 1: Paciente con pérdida de conciencia",
+                contenido: `
+                    <p>Un hombre de 64 años fue encontrado inconsciente en el piso de su casa, fue encontrado por su hijo, cuando este fue a buscarlo por que no contestaba el teléfono. Su hijo lo trae al servicio de Urgencias del Hospital Morelos, en el trayecto comenzó a mover sus extremidades y a decir cosas incoherentes.</p>
+                    <p>En este momento es capaz de hablar, con mayor fluidez y coherencia, pero arrastra un poco la lengua al hablar. Le refirió a la enfermera, que se siente mareado, y muy débil.</p>
+                `
+            },
+            2: {
+                titulo: "Caso 2: Paciente con cefalea y bradicardia",
+                contenido: `
+                    <p>Masculino de 70 años llega a urgencias con Cefalea y leve disnea. El dolor comenzó hace 2 horas mientras descansaba. Refiere cefalea holocraneana, intensidad 7/10 en EVA, con fatiga y debilidad. Tiene antecedentes de hipertensión y diabetes.</p>
+                    <p>Al examen físico se observa diaforético. Refiere también náuseas y sensación de ahogo.</p>
+                `
+            },
+            3: {
+                titulo: "Caso 3: Lipotimia",
+                contenido: `
+                    <p>Almendra es una joven de 23 años, que pierde el equilibrio y la fuerza durante un entrenamiento de cardio en el gimnasio, sus compañeros la trajeron al Hospital en automovil particular.</p>
+                    <p>Se observa somnolienta, con respuesta al estimulo verbal.</p>
+                `
+            },
+            4: {
+                titulo: "Caso 4: Paciente con dolor abdominal",
+                contenido: `
+                    <p>Paciente femenina de 35 años acude a urgencias por dolor abdominal intenso de 24 horas de evolución. El dolor se localiza en el cuadrante inferior derecho y se acompaña de náuseas y vómitos.</p>
+                    <p>Al examen físico se encuentra febril (38.5°C) y con defensa muscular en el hemiabdomen derecho. Refiere pérdida de apetito y escalofríos.</p>
+                `
+            }
+        };
+        
+        // Función para cargar el contenido del caso
+        function cargarContenidoCaso() {
+            // Obtener ID del caso
+            const casoId = sessionStorage.getItem('casoSeleccionado') || "1";
+            
+            // Cargar contenido específico para el caso
+            if (casos[casoId]) {
+                casoTitulo.textContent = casos[casoId].titulo;
+                casoContenido.innerHTML = casos[casoId].contenido;
+            } else {
+                // Caso por defecto si no se encuentra el ID
+                casoTitulo.textContent = "Caso no encontrado";
+                casoContenido.innerHTML = `<p>Lo sentimos, no se encontró información para este caso.</p>`;
+            }
+        }
+        
+        // Función para determinar el archivo de simulación
+        function obtenerArchivoSimulacion(casoId) {
+            const casos = {
+                1: "simulacion.html",
+                2: "simulacion_bradicardia_sinusal.html", // Modificado para caso 2
+                3: "simulacion3.html",
+                4: "simulacion_nuevo.html"
+            };
+            return casos[casoId] || "simulacion.html";
+        }
+        
+        // Al cargar la página, cargar el contenido del caso
+        document.addEventListener('DOMContentLoaded', cargarContenidoCaso);
+        
+        // Redirigir a la simulación
+        iniciarBtn.addEventListener('click', () => {
+            // Obtener ID del caso
+            const casoId = sessionStorage.getItem('casoSeleccionado') || "1";
+            
+            // Determinar qué simulación usar
+            const archivoSimulacion = obtenerArchivoSimulacion(casoId);
+            
+            // Guardar tiempo por defecto (20 min)
+            sessionStorage.setItem('tiempoSimulacion', 20);
+            
+            // Redirigir a la simulación correcta
+            window.location.href = archivoSimulacion;
+        });
+        
+        // Volver a la selección de casos
+        volverBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+>>>>>>> 78ab029b38855d3c91e06f0b7cc72c24a5bd4bfb
+</html>
